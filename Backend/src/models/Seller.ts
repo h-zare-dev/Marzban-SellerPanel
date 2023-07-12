@@ -12,6 +12,15 @@ const schema = new mongoose.Schema({
   Password: { type: String, required: [true, "Password is required"] },
 
   Counter: { type: Number, default: 0 },
+
+  Status: {
+    type: String,
+    enum: {
+      values: ["Active", "Deactive"],
+      message: "{VALUE} is not supported",
+    },
+    default: "Active",
+  },
 });
 
 export default mongoose.model("Seller", schema);
