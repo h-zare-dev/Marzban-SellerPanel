@@ -29,8 +29,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "sequelize": "^6.32.1",
-    "sqlite3": "^5.1.6"
+    "mongoose": "^7.3.2"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
