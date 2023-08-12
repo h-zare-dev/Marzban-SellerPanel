@@ -2,9 +2,10 @@ import { RequestHandler } from "express";
 import Tariff from "../models/Tariff";
 
 class TariffController {
-  static GetTariffList: RequestHandler = (req, res, next) => {
+  static GetTariffList: RequestHandler = async (req, res, next) => {
     try {
-      res.status(200).json({ result: "" });
+      const result = await Tariff.find();
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -12,7 +13,7 @@ class TariffController {
 
   static GetTariff: RequestHandler = (req, res, next) => {
     try {
-      res.status(200).json({ result: "" });
+      res.status(200).json({ result: "Not Implimented!" });
     } catch (error) {
       next(error);
     }
