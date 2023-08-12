@@ -1,16 +1,7 @@
 class Helper {
-  private static marzbanToken = "";
   private static marzbanURL = "";
   private static marzbanUsername = "";
   private static marzbanPassword = "";
-
-  static GetMarzbanToken() {
-    return this.marzbanToken;
-  }
-  static SetMarzbanToken(token: string) {
-    this.marzbanToken = token;
-    
-  }
 
   static GetMarzbanURL() {
     if (this.marzbanURL == "") {
@@ -49,6 +40,40 @@ class Helper {
       throw new Error("NOSUDO_MARZBAN_PASSWORD doestnt Exist in env File!");
     }
     return this.marzbanPassword;
+  }
+
+  static CalculateRemainDate(expire: number) {
+    if (expire != null) {
+      const diffDate = new Date(expire * 1000).getTime() - new Date().getTime();
+      const remainDay = Math.ceil(diffDate / (1000 * 3600 * 24)) - 1;
+      if (remainDay >= 0) return remainDay.toString() + " Day Left";
+      return Math.abs(remainDay).toString() + " Day Expired";
+    }
+    return "Never";
+  }
+
+  static CalculateTraffic(volume: number) {
+    if (volume < 1024) return volume.toString() + " B";
+    else if (volume < 1024 * 1024) return (volume / 1024).toFixed(2) + " KB";
+    else if (volume < 1024 * 1024 * 1024)
+      return (volume / (1024 * 1024)).toFixed(2) + " MB";
+    else if (volume < 1024 * 1024 * 1024 * 1024)
+      return (volume / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+    else if (volume < 1024 * 1024 * 1024 * 1024 * 1024)
+      return (volume / (1024 * 1024 * 1024 * 1024)).toFixed(2) + " TB";
+  }
+
+  static GenerateRandomPassword(length: number) {
+    const charset =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~!@#$%^&";
+    let password = "";
+
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+
+    return password;
   }
 }
 export default Helper;
