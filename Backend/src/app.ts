@@ -50,12 +50,12 @@ app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "app is running!" });
 });
 
-const portNumber = 8080;
-let host = "localhost";
+let portNumber = "8080";
+const host = "localhost";
 let connectionString = "";
 
-if (process.env.UVICORN_HOST && process.env.UVICORN_HOST != "")
-  host = process.env.UVICORN_HOST;
+if (process.env.BACKEND_PORT && process.env.BACKEND_PORT != "")
+  portNumber = process.env.BACKEND_PORT;
 
 if (
   process.env.MONGODB_CONNECTION_STRING &&
