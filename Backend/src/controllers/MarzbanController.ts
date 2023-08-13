@@ -160,7 +160,7 @@ class MarzbanController {
         {};
       let proxies: {
         vmess?: { id: string };
-        vless?: { id: string };
+        vless?: { id: string; flow: string };
         trojan?: { password: string };
       } = {};
 
@@ -179,6 +179,7 @@ class MarzbanController {
           ...proxies,
           vless: {
             id: vlessUUID,
+            flow: "xtls-rprx-vision",
           },
         };
         inbounds = { ...inbounds, vless: getInbound.vless };
