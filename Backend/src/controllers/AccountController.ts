@@ -57,5 +57,27 @@ class AccountController {
       next(error);
     }
   };
+  static PayAccount: RequestHandler = async (req, res, next) => {
+    try {
+      const accounts = req.body as {
+        Username: string;
+      }[];
+
+      console.log(accounts);
+
+      for (const acc of accounts) {
+        const account = await Account.findOne(acc);
+
+        if (account) {
+          account.Payed = true;
+          await account.save();
+        }
+      }
+
+      res.status(200).json("Pay Success!");
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 export default AccountController;
