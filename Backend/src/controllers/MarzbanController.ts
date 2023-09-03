@@ -17,10 +17,13 @@ class MarzbanController {
         headers: { "content-type": "application/x-www-form-urlencoded" },
       };
 
-      const { username, password } = req.body as {
+      let { username, password } = req.body as {
         username: string;
         password: string;
       };
+
+      username = username.toLowerCase().trim();
+      password = password.trim();
 
       const resultLogin = await Seller.findOne({
         Username: username,
@@ -228,17 +231,32 @@ class MarzbanController {
     try {
       const apiURL =
         Helper.GetMarzbanURL() + "/api/user/" + req.params.username;
-      const result = await axios.delete(apiURL, {
+
+      const resultget = await axios.get(apiURL, {
         headers: { Authorization: req.headers.authorization },
       });
-      if (result.status == 200) {
-        const result = await Account.findOneAndRemove({
-          Username: req.params.username,
-        });
-        if (result?.Username !== req.params.username)
-          throw new Error("User Not Found");
+
+      if (resultget.status == 200 && resultget.data) {
+        const used_traffic =
+          (resultget?.data?.used_traffic ?? 0) / (1024 * 1024 * 1024);
+
+        if (used_traffic < 1.0) {
+          const result = await axios.delete(apiURL, {
+            headers: { Authorization: req.headers.authorization },
+          });
+
+          if (result.status == 200) {
+            const result = await Account.findOneAndRemove({
+              Username: req.params.username,
+            });
+
+            if (result?.Username !== req.params.username)
+              throw new Error("User Not Found");
+          }
+
+          res.status(200).json({ message: "Delete Success!" });
+        }
       }
-      res.status(200).json({ message: "Delete Success!" });
     } catch (error) {
       next(error);
     }
