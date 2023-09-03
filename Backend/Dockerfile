@@ -8,6 +8,6 @@ RUN npm install --production
 
 COPY ./dist ./dist
 
-EXPOSE 80
+EXPOSE 8443
 
 CMD ["npm", "start"]
