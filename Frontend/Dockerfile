@@ -6,7 +6,7 @@ COPY ./package.json .
 
 RUN npm install --production
 
-COPY ./next ./.next
+COPY ./.next ./.next
 
 COPY ./public ./public
 
