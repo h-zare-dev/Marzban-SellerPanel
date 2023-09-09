@@ -15,14 +15,14 @@ export default function AddAccount(props: {
   AddingHandler: () => void;
   AddedHandler: () => void;
 }) {
-  const { user } = useMyContext();
+  const { user, config } = useMyContext();
   const [tariffList, setTariffList] = useState<TariffType[]>([]);
   const selectTariff = useRef<HTMLSelectElement | null>(null);
 
   useEffect(() => {
     const LaodTariff = async () => {
       try {
-        const url = new URL("api/tariffs", process.env.BACKEND_URL);
+        const url = new URL("api/tariffs", config.BACKEND_URL);
         const resultTariff = await axios.get(url.toString());
         setTariffList(resultTariff.data);
       } catch (error) {
@@ -30,7 +30,7 @@ export default function AddAccount(props: {
       }
     };
     if (user.Token !== "") LaodTariff();
-  }, [user.Token]);
+  }, [config.BACKEND_URL, user.Token]);
 
   const BtnAdd_Click = async () => {
     props.AddingHandler();
@@ -38,12 +38,8 @@ export default function AddAccount(props: {
     if (selectTariff.current) {
       const tariffId = selectTariff.current?.value;
 
-      //   const selectedTariff = tariffList.filter(
-      //     (tariff) => tariff._id === tariffId
-      //   );
-
       try {
-        const url = new URL("api/marzban/account", process.env.BACKEND_URL);
+        const url = new URL("api/marzban/account", config.BACKEND_URL);
 
         await axios.post(
           url.toString(),

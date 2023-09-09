@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Image } from "react-bootstrap";
@@ -10,20 +10,25 @@ import { useMyContext } from "@/context/MyContext";
 
 export default function Login() {
   const router = useRouter();
-  const { setUser } = useMyContext();
+  const { setUser, config, setConfig } = useMyContext();
   const [Loading, setLoading] = useState(false);
   const UsernameText = useRef<HTMLInputElement | null>(null);
   const PasswordText = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const getConfig = async () => {
+      const result = await axios("/api/getconfig");
+      setConfig(result.data);
+    };
+    getConfig();
+  }, [setConfig]);
 
   const Login_Click = async () => {
     if (!Loading) {
       setLoading(true);
       // try {
-      if (process.env.BACKEND_URL) {
-        const url = new URL(
-          "api/marzban/logintomarzban",
-          process.env.BACKEND_URL
-        );
+      if (config.BACKEND_URL) {
+        const url = new URL("api/marzban/logintomarzban", config.BACKEND_URL);
 
         const resultAccounts = await axios.post(url.toString(), {
           username: UsernameText.current?.value,
@@ -55,7 +60,7 @@ export default function Login() {
       />
 
       <h4 className="HeadLine ExploreDiv HoverRescale mt-3 FullPurpleColor ">
-        {process.env.CHANNEL_NAME}
+        {config.CHANNEL_NAME}
       </h4>
       <input
         type="text"

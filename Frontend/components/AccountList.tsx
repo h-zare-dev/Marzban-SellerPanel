@@ -23,7 +23,7 @@ interface AccountType {
 }
 
 export default function AccountList() {
-  const { user } = useMyContext();
+  const { user, config } = useMyContext();
 
   const [accountList, setAccountList] = useState<AccountType[]>([]);
 
@@ -79,7 +79,7 @@ export default function AccountList() {
       setLoading(true);
       let url = new URL(
         "api/marzban/accounts/" + user.Username,
-        process.env.BACKEND_URL
+        config.BACKEND_URL
       );
       const resultAccounts = await axios.get(url.toString(), {
         headers: { Authorization: "Bearer " + user.Token },
@@ -91,7 +91,7 @@ export default function AccountList() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [config.BACKEND_URL, user.Token, user.Username]);
 
   useEffect(() => {
     if (user.Token !== "") LaodAccount();
@@ -130,7 +130,7 @@ export default function AccountList() {
       setLoading(true);
       const url = new URL(
         "api/marzban/account/" + selectedDelete,
-        process.env.BACKEND_URL
+        config.BACKEND_URL
       );
 
       await axios.delete(url.toString(), {
