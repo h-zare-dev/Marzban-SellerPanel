@@ -1,55 +1,75 @@
 "use client";
 import axios from "axios";
-import { Fragment, useCallback, useEffect, useState } from "react";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridRenderCellParams,
+} from "@mui/x-data-grid";
+import LinearProgress from "@mui/material/LinearProgress";
+import Box from "@mui/material/Box";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RenewIcon from "@mui/icons-material/RecyclingOutlined";
 import LinkIcon from "@mui/icons-material/Link";
 import CheckIcon from "@mui/icons-material/Check";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRefresh } from "@fortawesome/free-solid-svg-icons";
+import CreditScoreRoundedIcon from "@mui/icons-material/CreditScoreRounded";
+import CreditCardOffRoundedIcon from "@mui/icons-material/CreditCardOffRounded";
+import GppMaybeRoundedIcon from "@mui/icons-material/GppMaybeRounded";
+import GppGoodRoundedIcon from "@mui/icons-material/GppGoodRounded";
+import GppBadRoundedIcon from "@mui/icons-material/GppBadRounded";
+import SafetyCheckRoundedIcon from "@mui/icons-material/SafetyCheckRounded";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 
 import { useMyContext } from "@/context/MyContext";
-import Modal from "react-bootstrap/Modal";
-import { Button } from "react-bootstrap";
-import AddAccount from "./AddAccount";
 import { copyTextToClipboard } from "@/utils/Helper";
+import AddAccount from "./AddAccount";
+import DeleteModal from "./DeleteModal";
+import RenewModal from "./RenewModal";
 
 interface AccountType {
+  show: string;
   username: string;
   subscription_url: string;
   payed: string;
-  used_traffic: string;
+  data_limit: number;
+  data_limit_string: string;
+  used_traffic: number;
+  used_traffic_string: string;
+  expire: number;
+  expire_string: string;
 }
 
 export default function AccountList() {
-  const { user, config } = useMyContext();
+  const { user, config, setUser } = useMyContext();
 
+  const [loading, setLoading] = useState(true);
   const [accountList, setAccountList] = useState<AccountType[]>([]);
 
-  const [selectedCopy, setSelectedCopy] = useState("");
-  const [selectedDelete, setSelectedDelete] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [selectedLink, setSelectedLink] = useState("");
+  const [selectedAccount, setSelectedAccount] = useState<AccountType>();
 
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
-  const handleShow = async () => setShow(true);
+  type DeleteModalHandle = React.ElementRef<typeof DeleteModal>;
+  const refDeleteModal = useRef<DeleteModalHandle>(null);
+
+  type RenewModalHandle = React.ElementRef<typeof RenewModal>;
+  const refRenewModal = useRef<RenewModalHandle>(null);
 
   const columns = [
     {
       headerName: "",
       field: "subscription_url",
       type: "actions",
-      width: 100,
+      width: 120,
       getActions: (params: { row: AccountType }) => [
         <GridActionsCellItem
           key="link"
           label="Link"
           icon={
-            params.row.username === selectedCopy ? (
-              <CheckIcon className="text-success" />
+            params.row.username === selectedLink ? (
+              <CheckIcon className="text-primary" />
             ) : (
-              <LinkIcon />
+              <LinkIcon className="text-primary" />
             )
           }
           onClick={() => onCopyLink(params.row)}
@@ -57,26 +77,128 @@ export default function AccountList() {
         <GridActionsCellItem
           key="delete"
           label="Delete"
-          icon={
-            <div className="text-danger">
-              <DeleteIcon />
-            </div>
-          }
-          onClick={() => onDeleteClick(params.row.username)}
+          icon={<DeleteIcon className="text-danger" />}
+          onClick={() => onDeleteClick(params.row)}
+        />,
+        <GridActionsCellItem
+          key="renew"
+          label="Renew"
+          icon={<RenewIcon className="text-success" />}
+          onClick={() => onRenewClick(params.row)}
         />,
       ],
     },
     { field: "username", headerName: "Username", width: 140 },
-    { field: "data_limit", headerName: "Limit", width: 110 },
-    { field: "used_traffic", headerName: "Usage", width: 110 },
-    { field: "expire", headerName: "Expire", width: 120 },
-    { field: "status", headerName: "Status", width: 110 },
-    { field: "payed", headerName: "Payed", width: 110 },
+    { field: "data_limit_string", headerName: "Limit", width: 110 },
+    {
+      field: "used_traffic_string",
+      headerName: "Usage",
+      width: 110,
+      renderCell: (params: GridRenderCellParams<any, string>) =>
+        RenderUsage(params.row),
+    },
+    { field: "expire_string", headerName: "Expire", width: 120 },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 110,
+      renderCell: (params: GridRenderCellParams<any, string>) =>
+        RenderStatus(params.value),
+    },
+    {
+      field: "payed",
+      headerName: "Payment",
+      width: 110,
+      renderCell: (params: GridRenderCellParams<any, string>) =>
+        RenderPayment(params.value),
+    },
   ];
 
-  const LaodAccount = useCallback(async () => {
+  const RenderStatus = (status: string | undefined) => {
+    switch (status) {
+      case "active":
+        return (
+          <span className="text-success">
+            <GppGoodRoundedIcon></GppGoodRoundedIcon> {status}
+          </span>
+        );
+      case "disabled":
+        return (
+          <span className="text-secondary">
+            <GppBadRoundedIcon></GppBadRoundedIcon>
+            {status}
+          </span>
+        );
+      case "expired":
+        return (
+          <span className="text-primary">
+            <SafetyCheckRoundedIcon></SafetyCheckRoundedIcon>
+            {status}
+          </span>
+        );
+      case "limited":
+        return (
+          <span className="text-danger">
+            <GppMaybeRoundedIcon></GppMaybeRoundedIcon>
+            {status}
+          </span>
+        );
+    }
+  };
+
+  const RenderPayment = (payment: string | undefined) => {
+    switch (payment) {
+      case "Paid":
+        return (
+          <span className="text-success">
+            <CreditScoreRoundedIcon></CreditScoreRoundedIcon>
+            Paid
+          </span>
+        );
+      case "Unpaid":
+        return (
+          <span className="text-secondary">
+            <CreditCardOffRoundedIcon></CreditCardOffRoundedIcon>
+            Unpaid
+          </span>
+        );
+    }
+  };
+
+  const RenderUsage = (row: AccountType) => {
+    return (
+      <Box sx={{ width: "100%" }}>
+        {row.used_traffic_string}
+        <LinearProgress
+          variant="determinate"
+          value={(row.used_traffic / row.data_limit) * 100}
+        />
+      </Box>
+    );
+  };
+
+  const onCopyLink = (row: AccountType) => {
+    copyTextToClipboard(row.subscription_url);
+    setSelectedLink(row.username);
+  };
+
+  const onRenewClick = (row: AccountType) => {
+    if (row.payed !== "Payed") {
+      setSelectedAccount(row);
+      refRenewModal.current?.Show(row.username);
+    }
+  };
+
+  const onDeleteClick = (row: AccountType) => {
+    if (row.payed !== "Payed" && !row.used_traffic_string.includes("GB")) {
+      setSelectedAccount(row);
+      refDeleteModal.current?.Show(row.username);
+    }
+  };
+
+  const LoadAccount = useCallback(async () => {
     try {
-      setLoading(true);
+      StartLoading();
       let url = new URL(
         "api/marzban/accounts/" + user.Username,
         config.BACKEND_URL
@@ -94,109 +216,75 @@ export default function AccountList() {
   }, [config.BACKEND_URL, user.Token, user.Username]);
 
   useEffect(() => {
-    if (user.Token !== "") LaodAccount();
-  }, [LaodAccount, user.Token]);
+    if (user.Token !== "") LoadAccount();
+  }, [LoadAccount, user.Token]);
 
   const BtnRefreh_Click = () => {
-    LaodAccount();
+    LoadAccount();
   };
 
-  const onCopyLink = (row: { username: string; subscription_url: string }) => {
-    copyTextToClipboard(row.subscription_url);
-    setSelectedCopy(row.username);
+  const DeleteAccount = async () => {
+    if (selectedAccount)
+      try {
+        StartLoading();
+
+        const url = new URL(
+          "api/marzban/account/" + selectedAccount?.username,
+          config.BACKEND_URL
+        );
+
+        await axios.delete(url.toString(), {
+          headers: { Authorization: "Bearer " + user.Token },
+        });
+
+        user.Limit += selectedAccount?.data_limit / (1024 * 1024 * 1024);
+        setUser({ ...user, Limit: user.Limit });
+      } catch (error) {
+        console.log(error);
+      } finally {
+        LoadAccount();
+      }
   };
 
-  const onDeleteClick = async (username: string) => {
-    const account = accountList.filter(
-      (account) => account.username === username
-    );
+  const RenewAccount = async () => {};
 
-    if (
-      account[0].payed !== "Payed" &&
-      !account[0].used_traffic.includes("GB")
-    ) {
-      handleShow();
-      setSelectedDelete(username);
-    }
-  };
-
-  const btnNo_Click = () => {
-    handleClose();
-  };
-
-  const btnYes_Click = async () => {
-    handleClose();
-    try {
-      setLoading(true);
-      const url = new URL(
-        "api/marzban/account/" + selectedDelete,
-        config.BACKEND_URL
-      );
-
-      await axios.delete(url.toString(), {
-        headers: { Authorization: "Bearer " + user.Token },
-      });
-    } catch (error) {
-      console.log(error);
-    }
-    await LaodAccount();
-  };
-
-  const AddingHandler = () => {
+  const StartLoading = () => {
     setLoading(true);
   };
 
-  const AddedHandler = () => {
-    LaodAccount();
-  };
+  console.log("AccountList Rendering!");
 
   return (
-    <Fragment>
-      <Modal
-        className="border border-1   shadow rounded-3"
-        show={show}
-        onHide={handleClose}
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton className="bg-danger text-white ">
-          <Modal.Title>Delete Account</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>Are you sure to delete account?</p>
-        </Modal.Body>
-        <Modal.Footer className="justify-content-end">
-          <Button variant="danger" className="w100px" onClick={btnYes_Click}>
-            YES
-          </Button>
-          <Button variant="success" className="w100px" onClick={btnNo_Click}>
-            NO
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      <div className="container-fluid  bg-primery">
-        <AddAccount AddedHandler={AddedHandler} AddingHandler={AddingHandler} />
-        <div className="row">
-          <div className="col justify-content-end d-flex mt-1">
-            <button className="btn border-0 " onClick={BtnRefreh_Click}>
-              <FontAwesomeIcon className="   text-success" icon={faRefresh} />
-            </button>
-          </div>
+    <div className="container-fluid bg-primery">
+      <AddAccount
+        EndAdding={LoadAccount}
+        StartAdding={StartLoading}
+        Mode="Add"
+      />
+      <div className="row">
+        <div className="col justify-content-end d-flex mt-1">
+          <button className="btn border-0 " onClick={BtnRefreh_Click}>
+            <AutorenewIcon className="text-success" />
+          </button>
         </div>
-        <div className="row mt-1">
-          <div className="col-12">
-            <div
-              style={{ height: 635, width: "100%", backgroundColor: "#eff1fa" }}
-            >
-              <DataGrid
-                rows={accountList}
-                columns={columns}
-                loading={loading}
-              />
-            </div>
+      </div>
+      <div className="row mt-1">
+        <div className="col-12">
+          <div className="ContainerGrid">
+            <DataGrid
+              className="Grid"
+              rows={accountList}
+              columns={columns}
+              loading={loading}
+            />
           </div>
         </div>
       </div>
-    </Fragment>
+      <DeleteModal
+        DeletingHandler={DeleteAccount}
+        ref={refDeleteModal}
+      ></DeleteModal>
+      <RenewModal RenewHandler={RenewAccount} ref={refRenewModal}></RenewModal>
+    </div>
   );
 }
