@@ -2,8 +2,9 @@ services:
   marzban-seller-panel-frontend:
     image: mehdizadehasma/marzban-seller-panel-frontend:latest
     restart: always
-    env_file: .env
-
+    volumes:
+      - ./config.json:/frontend/data/config.json
+      - ./logo.gif:/frontend/logo.gif
     ports:
       - 3000:3000
     depends_on:
@@ -15,10 +16,9 @@ services:
     env_file: .env
     volumes:
       - ./certs:/backend/certs
-
     ports:
       - 8000:8443
-    
+
   nginx:
     image: nginx:alpine
     volumes:

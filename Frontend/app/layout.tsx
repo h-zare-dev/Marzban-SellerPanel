@@ -1,9 +1,10 @@
-import "./globals.css";
 import { Inter } from "next/font/google";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { MyContextProvider } from "@/context/MyContext";
-const inter = Inter({ subsets: ["latin"] });
 
+import { MyContextProvider } from "@/context/MyContext";
+import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   title: "Marzban Seller Panel",
   description: "Marzban Seller Panel",
