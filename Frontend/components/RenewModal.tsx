@@ -31,8 +31,6 @@ const RenewModal = forwardRef<ForwardRefHandle, PropsType>((props, ref) => {
     btnCancel_Click();
   };
 
-  console.log("RenewModal Rendering!");
-
   return (
     <Modal
       className="border border-1 shadow rounded-3"

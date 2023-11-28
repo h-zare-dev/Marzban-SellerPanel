@@ -58,7 +58,6 @@ export default function AddAccount(props: {
           );
           user.Limit -= dataLimit;
           setUser({ ...user, Limit: user.Limit });
-          console.log("Account Added!", user.Limit);
         } catch (error) {
           console.log(error);
         }
@@ -76,8 +75,6 @@ export default function AddAccount(props: {
         );
       });
   };
-
-  console.log("AddAccount Rendering!");
 
   return props.Mode == "Add" ? (
     <div className="row w-100 ">

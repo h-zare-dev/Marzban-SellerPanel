@@ -29,8 +29,6 @@ const DeleteModal = forwardRef<ForwardRefHandle, PropsType>((props, ref) => {
     btnNo_Click();
   };
 
-  console.log("DeleteModal Rendering!");
-
   return (
     <Modal
       className="border border-1 shadow rounded-3"
