@@ -38,6 +38,7 @@ export default function Login() {
           setUser({
             Username: resultAccounts.data.Username,
             Token: resultAccounts.data.Token,
+            Limit: resultAccounts.data.Limit,
           });
           router.push("/dashboard");
           setLoading(false);
@@ -48,6 +49,7 @@ export default function Login() {
       // }
     }
   };
+
   return (
     <div className="firstdiv col-6 d-flex flex-column justify-content-center h-100 border border-1 border-muted  rounded-3 shadow shadow-lg ">
       <Image

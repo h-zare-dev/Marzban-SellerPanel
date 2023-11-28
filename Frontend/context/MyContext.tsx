@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext } from "react";
 
+type UserType = { Username: string; Token: string; Limit: number };
+
 export interface JsonData {
   BACKEND_URL?: string;
   PAGE_TITLE?: string;
@@ -9,8 +11,8 @@ export interface JsonData {
 }
 
 type MyContextType = {
-  user: { Username: string; Token: string };
-  setUser: (data: { Username: string; Token: string }) => void;
+  user: UserType;
+  setUser: (data: UserType) => void;
   config: JsonData;
   setConfig: (data: JsonData) => void;
 };
@@ -22,7 +24,7 @@ interface PropsType {
 }
 
 export const MyContextProvider: React.FC<PropsType> = (props) => {
-  const [user, setUser] = React.useState({ Username: "", Token: "" });
+  const [user, setUser] = React.useState({ Username: "", Token: "", Limit: 5 });
   const [config, setConfig] = React.useState({});
 
   return (

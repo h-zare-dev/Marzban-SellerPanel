@@ -448,6 +448,16 @@ a {
   border-radius: 3px;
 }
 
+.ContainerGrid{
+  height: 635px;
+  width: "100%";
+  background-color: "#eff1fa" ;
+}
+
+.Grid{
+  background-color: "white"
+}
+
 .MainBox {
   border: 0px;
   border-radius: 3px;
@@ -455,6 +465,7 @@ a {
 .BorderPurple {
   border-color: purple;
 }
+
 .BorderOrange {
   border-color: rgb(224, 136, 21);
   color: rgb(187, 84, 0);
