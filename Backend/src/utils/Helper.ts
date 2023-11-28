@@ -1,5 +1,6 @@
 class Helper {
   private static marzbanURL = "";
+  private static subscriptionURL = "";
   private static marzbanUsername = "";
   private static marzbanPassword = "";
 
@@ -8,6 +9,17 @@ class Helper {
       if (process.env.MARZBAN_URL && process.env.MARZBAN_URL != "") {
         this.marzbanURL = process.env.MARZBAN_URL;
         return this.marzbanURL;
+      }
+      throw new Error("Marzban_URL doestnt Exist in env File!");
+    }
+    return this.marzbanURL;
+  }
+
+  static GetSubscriptionURL() {
+    if (this.subscriptionURL == "") {
+      if (process.env.SUBSCRIPTION_URL && process.env.SUBSCRIPTION_URL != "") {
+        this.subscriptionURL = process.env.SUBSCRIPTION_URL;
+        return this.subscriptionURL;
       }
       throw new Error("Marzban_URL doestnt Exist in env File!");
     }

@@ -13,6 +13,8 @@ const schema = new mongoose.Schema({
 
   Counter: { type: Number, default: 0 },
 
+  Limit:{ type: Number, default: 0 },
+
   Status: {
     type: String,
     enum: {

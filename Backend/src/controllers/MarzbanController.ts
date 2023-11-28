@@ -22,27 +22,36 @@ class MarzbanController {
         password: string;
       };
 
-      username = username.toLowerCase().trim();
+      username = username.trim();
       password = password.trim();
 
-      const resultLogin = await Seller.findOne({
+      const seller = await Seller.findOne({
         Username: username,
-        Password: password,
       });
 
-      if (resultLogin) {
-        const result: { data: { access_token: string } } = await axios.post(
-          apiURL,
-          {
-            username: Helper.GetMarzbanUsername(),
-            password: Helper.GetMarzbanPassword(),
-          },
-          config
-        );
+      if (seller) {
+        const accounts = await Account.find({ Seller: seller, Payed: false });
+
+        let totalUnpaid = 0;
+        accounts.map((account) => {
+          const limit = +account.Tariff.split("GB")[0];
+          if (limit) totalUnpaid += limit;
+        });
+
+        const resultLogin: { data: { access_token: string } } =
+          await axios.post(
+            apiURL,
+            {
+              username: username,
+              password: password,
+            },
+            config
+          );
 
         res.status(200).json({
-          Token: result.data.access_token,
-          Username: resultLogin.Title,
+          Token: resultLogin.data.access_token,
+          Username: seller.Title,
+          Limit: seller.Limit - totalUnpaid,
         });
       } else {
         res.status(500).json({ Message: "something is wrong!" });
@@ -88,16 +97,20 @@ class MarzbanController {
         return {
           id: resultpayed[0] ? resultpayed[0]._id : Math.random().toString(),
           username: item.username,
-          data_limit: Helper.CalculateTraffic(item.data_limit),
-          used_traffic: Helper.CalculateTraffic(item.used_traffic),
-          expire: Helper.CalculateRemainDate(item.expire),
+          tarif: resultpayed[0].Tariff,
+          data_limit: item.data_limit,
+          data_limit_string: Helper.CalculateTraffic(item.data_limit),
+          used_traffic: item.used_traffic,
+          used_traffic_string: Helper.CalculateTraffic(item.used_traffic),
+          expire: item.expire,
+          expire_string: Helper.CalculateRemainDate(item.expire),
           status: item.status,
-          subscription_url: Helper.GetMarzbanURL() + item.subscription_url,
+          subscription_url: Helper.GetSubscriptionURL() + item.subscription_url,
           payed: resultpayed[0]
             ? resultpayed[0].Payed
-              ? "Payed"
-              : "No Pay"
-            : "No",
+              ? "Paid"
+              : "Unpaid"
+            : "Unpaid",
         };
       });
 
@@ -240,7 +253,7 @@ class MarzbanController {
         const used_traffic =
           (resultget?.data?.used_traffic ?? 0) / (1024 * 1024 * 1024);
 
-        if (used_traffic < 1.0) {
+        if (used_traffic < 1.2) {
           const result = await axios.delete(apiURL, {
             headers: { Authorization: req.headers.authorization },
           });
