@@ -252,8 +252,6 @@ export default function AccountList() {
     setLoading(true);
   };
 
-  console.log("AccountList Rendering!");
-
   return (
     <div className="container-fluid bg-primery">
       <AddAccount
