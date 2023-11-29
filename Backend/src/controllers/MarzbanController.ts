@@ -42,8 +42,8 @@ class MarzbanController {
           await axios.post(
             apiURL,
             {
-              username: username,
-              password: password,
+              username: Helper.GetMarzbanUsername(),
+              password: Helper.GetMarzbanPassword(),
             },
             config
           );
@@ -83,6 +83,9 @@ class MarzbanController {
             expire: number;
             status: string;
             subscription_url: string;
+            online_at: string;
+            sub_updated_at: string;
+            sub_last_user_agent: string;
           }[];
         };
       } = await axios.get(apiURL, config);
@@ -106,6 +109,10 @@ class MarzbanController {
           expire_string: Helper.CalculateRemainDate(item.expire),
           status: item.status,
           subscription_url: Helper.GetSubscriptionURL() + item.subscription_url,
+          online: Helper.IsOnline(item.online_at),
+          online_at: Helper.CalculateOnlineDate(item.online_at),
+          sub_updated_at: Helper.CalculateOnlineDate(item.sub_updated_at),
+          sub_last_user_agent: item.sub_last_user_agent,
           payed: resultpayed[0]
             ? resultpayed[0].Payed
               ? "Paid"
@@ -233,6 +240,72 @@ class MarzbanController {
       await account.save();
 
       await seller.save();
+
+      res.status(200).json(result.data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static EditAccount: RequestHandler = async (req, res, next) => {
+    try {
+      const apiURL =
+        Helper.GetMarzbanURL() + "/api/user/" + req.params.username;
+
+      const { status } = req.body as {
+        status: string;
+      };
+
+      if (req.params.username && req.params.username === "") {
+        res.status(404).json("Username not Found");
+        return;
+      }
+
+      const result = await axios.put(
+        apiURL,
+        {
+          // proxies: {},
+          // inbounds: {},
+          status: status,
+          // note: "",
+          // data_limit_reset_strategy: "no_reset",
+          // on_hold_timeout: "",
+          // on_hold_expire_duration: 0,
+        },
+        {
+          headers: { Authorization: req.headers.authorization },
+        }
+      );
+
+      res.status(200).json(result.data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static DisableAccount: RequestHandler = async (req, res, next) => {
+    try {
+      const apiURL =
+        Helper.GetMarzbanURL() + "/api/user/" + req.params.username;
+
+      const { status } = req.body as {
+        status: string;
+      };
+
+      if (req.params.username && req.params.username === "") {
+        res.status(404).json("Username not Found");
+        return;
+      }
+
+      const result = await axios.put(
+        apiURL,
+        {
+          status: status,
+        },
+        {
+          headers: { Authorization: req.headers.authorization },
+        }
+      );
 
       res.status(200).json(result.data);
     } catch (error) {

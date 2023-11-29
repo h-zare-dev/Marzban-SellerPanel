@@ -20,6 +20,9 @@ import GppGoodRoundedIcon from "@mui/icons-material/GppGoodRounded";
 import GppBadRoundedIcon from "@mui/icons-material/GppBadRounded";
 import SafetyCheckRoundedIcon from "@mui/icons-material/SafetyCheckRounded";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
+import CircleIcon from "@mui/icons-material/Circle";
+import ToggleOnIcon from "@mui/icons-material/ToggleOn";
+import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 
 import { useMyContext } from "@/context/MyContext";
 import { copyTextToClipboard } from "@/utils/Helper";
@@ -30,7 +33,10 @@ import RenewModal from "./RenewModal";
 interface AccountType {
   show: string;
   username: string;
+  tarif: string;
   subscription_url: string;
+  online: string;
+  online_at: string;
   payed: string;
   data_limit: number;
   data_limit_string: string;
@@ -38,6 +44,7 @@ interface AccountType {
   used_traffic_string: string;
   expire: number;
   expire_string: string;
+  status: string;
 }
 
 export default function AccountList() {
@@ -60,7 +67,7 @@ export default function AccountList() {
       headerName: "",
       field: "subscription_url",
       type: "actions",
-      width: 120,
+      width: 180,
       getActions: (params: { row: AccountType }) => [
         <GridActionsCellItem
           key="link"
@@ -86,9 +93,36 @@ export default function AccountList() {
           icon={<RenewIcon className="text-success" />}
           onClick={() => onRenewClick(params.row)}
         />,
+        <GridActionsCellItem
+          key="disable"
+          label="disable"
+          icon={
+            params.row.status === "disabled" ? (
+              <ToggleOffIcon
+                className="text-secondry "
+                sx={{ fontSize: "35px" }}
+              />
+            ) : (
+              <ToggleOnIcon
+                sx={{ fontSize: "35px" }}
+                className="text-success "
+              />
+            )
+          }
+          onClick={() => onDisableAccount(params.row)}
+        />,
       ],
     },
+    {
+      field: "online",
+      headerName: "",
+      width: 5,
+      renderCell: (params: GridRenderCellParams<any, string>) =>
+        RenderOnline(params.value),
+    },
+    { field: "online_at", headerName: "Online", width: 170 },
     { field: "username", headerName: "Username", width: 140 },
+    { field: "tarif", headerName: "Tarif", width: 170 },
     { field: "data_limit_string", headerName: "Limit", width: 110 },
     {
       field: "used_traffic_string",
@@ -106,6 +140,16 @@ export default function AccountList() {
         RenderStatus(params.value),
     },
     {
+      field: "sub_updated_at",
+      headerName: "Subscription Last Update",
+      width: 180,
+    },
+    {
+      field: "sub_last_user_agent",
+      headerName: "Subscription Last App",
+      width: 180,
+    },
+    {
       field: "payed",
       headerName: "Payment",
       width: 110,
@@ -113,6 +157,29 @@ export default function AccountList() {
         RenderPayment(params.value),
     },
   ];
+
+  const RenderOnline = (online: string | undefined) => {
+    switch (online) {
+      case "Online":
+        return (
+          <span className="text-success  ">
+            <CircleIcon></CircleIcon>
+          </span>
+        );
+      case "Offline":
+        return (
+          <span className="text-danger ">
+            <CircleIcon className="w-75"></CircleIcon>
+          </span>
+        );
+      case "Never":
+        return (
+          <span className="text-warning">
+            <CircleIcon className="w-75"></CircleIcon>
+          </span>
+        );
+    }
+  };
 
   const RenderStatus = (status: string | undefined) => {
     switch (status) {
@@ -194,6 +261,31 @@ export default function AccountList() {
       setSelectedAccount(row);
       refDeleteModal.current?.Show(row.username);
     }
+  };
+
+  const onDisableAccount = async (row: AccountType) => {
+    if (row.status == "active" || row.status == "disabled")
+      try {
+        StartLoading();
+
+        let url = new URL(
+          "api/marzban/disableaccount/" + row.username,
+          config.BACKEND_URL
+        );
+        await axios.post(
+          url.toString(),
+          {
+            status: row.status == "active" ? "disabled" : "active",
+          },
+          {
+            headers: { Authorization: "Bearer " + user.Token },
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        LoadAccount();
+      }
   };
 
   const LoadAccount = useCallback(async () => {

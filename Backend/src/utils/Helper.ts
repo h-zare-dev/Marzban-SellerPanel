@@ -64,6 +64,34 @@ class Helper {
     return "Never";
   }
 
+  static IsOnline(online_at: string) {
+    if (online_at != null) {
+      const diffTime = new Date().getTime() - new Date(online_at).getTime();
+      const remainMinutes = Math.ceil(diffTime / (1000 * 60)) - 1;
+      if (remainMinutes < 2) return "Online";
+      else return "Offline";
+    }
+    return "Never";
+  }
+
+  static CalculateOnlineDate(online_at: string) {
+    if (online_at != null) {
+      const diffTime = new Date().getTime() - new Date(online_at).getTime();
+      const remainMinutes = Math.ceil(diffTime / (1000 * 60)) - 1;
+      if (remainMinutes > 1440)
+        return Math.floor(remainMinutes / 1440) + " Days ago";
+      if (remainMinutes > 60)
+        return (
+          Math.floor(remainMinutes / 60) +
+          " Hours " +
+          (remainMinutes % 60) +
+          " Minutes ago"
+        );
+      return remainMinutes + " Minutes ago";
+    }
+    return "Never";
+  }
+
   static CalculateTraffic(volume: number) {
     if (volume < 1024) return volume.toString() + " B";
     else if (volume < 1024 * 1024) return (volume / 1024).toFixed(2) + " KB";
