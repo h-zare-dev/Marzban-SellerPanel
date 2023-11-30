@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 
 import { useMyContext } from "@/context/MyContext";
 
@@ -11,11 +11,13 @@ interface TariffType {
   Duration: number;
 }
 
-export default function AddAccount(props: {
-  StartAdding: () => void;
-  EndAdding: () => void;
+interface PropsType {
+  StartAdding?: () => void;
+  EndAdding?: () => void;
   Mode: string;
-}) {
+}
+
+const AddAccount = forwardRef<HTMLSelectElement, PropsType>((props, ref) => {
   const { user, config, setUser } = useMyContext();
   const [tariffList, setTariffList] = useState<TariffType[]>([]);
   const selectTariff = useRef<HTMLSelectElement | null>(null);
@@ -34,7 +36,7 @@ export default function AddAccount(props: {
   }, [config.BACKEND_URL, user.Token]);
 
   const BtnAdd_Click = async () => {
-    props.StartAdding();
+    if (props.StartAdding) props.StartAdding();
 
     if (selectTariff.current) {
       const tariffId = selectTariff.current?.value;
@@ -61,7 +63,7 @@ export default function AddAccount(props: {
         } catch (error) {
           console.log(error);
         }
-      props.EndAdding();
+      if (props.EndAdding) props.EndAdding();
     }
   };
 
@@ -115,7 +117,7 @@ export default function AddAccount(props: {
             name="tariffList"
             id="tariffList"
             className="rounded-2 border-dark border-2  p-2  tariffDrop w-100"
-            ref={selectTariff}
+            ref={ref}
           >
             {FillTariffs()}
           </select>
@@ -123,4 +125,8 @@ export default function AddAccount(props: {
       </div>
     </div>
   );
-}
+});
+
+AddAccount.displayName = "AddAccount";
+
+export default AddAccount;

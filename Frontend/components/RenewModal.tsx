@@ -1,10 +1,10 @@
-import { useImperativeHandle, useState, forwardRef } from "react";
+import { useImperativeHandle, useState, forwardRef, useRef } from "react";
 import { Button, Modal } from "react-bootstrap";
 
 import AddAccount from "./AddAccount";
 
 interface PropsType {
-  RenewHandler: () => void;
+  RenewHandler: (username: string, tariffId: string) => void;
 }
 
 interface ForwardRefHandle {
@@ -14,6 +14,7 @@ interface ForwardRefHandle {
 
 const RenewModal = forwardRef<ForwardRefHandle, PropsType>((props, ref) => {
   const [username, setUsername] = useState("");
+  const selectTariff = useRef<HTMLSelectElement | null>(null);
 
   useImperativeHandle(ref, () => ({
     Show: (username: string) => {
@@ -27,7 +28,8 @@ const RenewModal = forwardRef<ForwardRefHandle, PropsType>((props, ref) => {
   };
 
   const btnRenew_Click = async () => {
-    props.RenewHandler();
+    if (selectTariff.current)
+      props.RenewHandler(username, selectTariff.current.value);
     btnCancel_Click();
   };
 
@@ -44,11 +46,7 @@ const RenewModal = forwardRef<ForwardRefHandle, PropsType>((props, ref) => {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <AddAccount
-          EndAdding={btnCancel_Click}
-          StartAdding={btnCancel_Click}
-          Mode="Renew"
-        />
+        <AddAccount Mode="Renew" ref={selectTariff} />
       </Modal.Body>
       <Modal.Footer className="justify-content-end">
         <Button variant="success" className="w100px" onClick={btnRenew_Click}>

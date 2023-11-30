@@ -113,15 +113,15 @@ export default function AccountList() {
         />,
       ],
     },
+    { field: "username", headerName: "Username", width: 140 },
     {
       field: "online",
       headerName: "",
-      width: 5,
+      width: 20,
       renderCell: (params: GridRenderCellParams<any, string>) =>
         RenderOnline(params.value),
     },
-    { field: "online_at", headerName: "Online", width: 170 },
-    { field: "username", headerName: "Username", width: 140 },
+    { field: "online_at", headerName: "Online", width: 180 },
     { field: "tarif", headerName: "Tarif", width: 170 },
     { field: "data_limit_string", headerName: "Limit", width: 110 },
     {
@@ -163,19 +163,19 @@ export default function AccountList() {
       case "Online":
         return (
           <span className="text-success  ">
-            <CircleIcon></CircleIcon>
+            <CircleIcon className="w-100 border border-3 border-success rounded-circle"></CircleIcon>
           </span>
         );
       case "Offline":
         return (
-          <span className="text-danger ">
-            <CircleIcon className="w-75"></CircleIcon>
+          <span className="text-danger  ">
+            <CircleIcon className="w-100 border border-3 border-danger rounded-circle "></CircleIcon>
           </span>
         );
       case "Never":
         return (
           <span className="text-warning">
-            <CircleIcon className="w-75"></CircleIcon>
+            <CircleIcon className="w-100 border border-3 border-secondary rounded-circle"></CircleIcon>
           </span>
         );
     }
@@ -250,14 +250,17 @@ export default function AccountList() {
   };
 
   const onRenewClick = (row: AccountType) => {
-    if (row.payed !== "Payed") {
+    if (
+      row.payed == "Paid" &&
+      (row.status == "expired" || row.status == "limited")
+    ) {
       setSelectedAccount(row);
       refRenewModal.current?.Show(row.username);
     }
   };
 
   const onDeleteClick = (row: AccountType) => {
-    if (row.payed !== "Payed" && !row.used_traffic_string.includes("GB")) {
+    if (row.payed !== "Paid" && !row.used_traffic_string.includes("GB")) {
       setSelectedAccount(row);
       refDeleteModal.current?.Show(row.username);
     }
@@ -338,7 +341,35 @@ export default function AccountList() {
       }
   };
 
-  const RenewAccount = async () => {};
+  const RenewAccount = async (username: string, tariffId: string) => {
+    if (selectedAccount)
+      try {
+        StartLoading();
+
+        const url = new URL(
+          "api/marzban/renewaccount/" + user.Username,
+          config.BACKEND_URL
+        );
+
+        await axios.post(
+          url.toString(),
+          {
+            username: username,
+            tariffId: tariffId,
+          },
+          {
+            headers: { Authorization: "Bearer " + user.Token },
+          }
+        );
+
+        user.Limit += selectedAccount?.data_limit / (1024 * 1024 * 1024);
+        setUser({ ...user, Limit: user.Limit });
+      } catch (error) {
+        console.log(error);
+      } finally {
+        LoadAccount();
+      }
+  };
 
   const StartLoading = () => {
     setLoading(true);
