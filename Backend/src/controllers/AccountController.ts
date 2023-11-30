@@ -63,8 +63,6 @@ class AccountController {
         Username: string;
       }[];
 
-      console.log(accounts);
-
       for (const acc of accounts) {
         const account = await Account.findOne(acc);
 

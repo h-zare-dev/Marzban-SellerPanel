@@ -8,6 +8,18 @@ import Account from "../models/Account";
 import Seller from "../models/Seller";
 import Tariff from "../models/Tariff";
 
+interface MarzbanAccount {
+  username: string;
+  data_limit: number;
+  used_traffic: number;
+  expire: number;
+  status: string;
+  subscription_url: string;
+  online_at: string;
+  sub_updated_at: string;
+  sub_last_user_agent: string;
+}
+
 class MarzbanController {
   static LoginToMarzbanAPI: RequestHandler = async (req, res, next) => {
     try {
@@ -70,58 +82,63 @@ class MarzbanController {
         params: {
           // offset: 0,
           // limit: 100,
-          username: req.params.username,
+          username: req.params.seller,
         },
       };
 
       const result: {
         data: {
-          users: {
-            username: string;
-            data_limit: number;
-            used_traffic: number;
-            expire: number;
-            status: string;
-            subscription_url: string;
-            online_at: string;
-            sub_updated_at: string;
-            sub_last_user_agent: string;
-          }[];
+          users: MarzbanAccount[];
         };
       } = await axios.get(apiURL, config);
 
-      const sellerAccount = await Account.find();
+      const seller = await Seller.findOne({ Title: req.params.seller });
 
-      const accounts = result.data.users.map((item) => {
-        const resultpayed = sellerAccount.filter(
-          (account) => account.Username == item.username
-        );
+      const sellerAccounts = await Account.find({
+        Seller: new Types.ObjectId(seller?._id),
+      });
+
+      const accounts = sellerAccounts.map((item) => {
+        const marzbanAccount = result.data.users.filter(
+          (account) => account.username == item.Username
+        )[0];
+
+        if (!marzbanAccount)
+          return {
+            id: item._id,
+            username: item.Username,
+            tarif: item.Tariff,
+            payed: item.Payed ? "Paid" : "Unpaid",
+          };
 
         return {
-          id: resultpayed[0] ? resultpayed[0]._id : Math.random().toString(),
-          username: item.username,
-          tarif: resultpayed[0].Tariff,
-          data_limit: item.data_limit,
-          data_limit_string: Helper.CalculateTraffic(item.data_limit),
-          used_traffic: item.used_traffic,
-          used_traffic_string: Helper.CalculateTraffic(item.used_traffic),
-          expire: item.expire,
-          expire_string: Helper.CalculateRemainDate(item.expire),
-          status: item.status,
-          subscription_url: Helper.GetSubscriptionURL() + item.subscription_url,
-          online: Helper.IsOnline(item.online_at),
-          online_at: Helper.CalculateOnlineDate(item.online_at),
-          sub_updated_at: Helper.CalculateOnlineDate(item.sub_updated_at),
-          sub_last_user_agent: item.sub_last_user_agent,
-          payed: resultpayed[0]
-            ? resultpayed[0].Payed
-              ? "Paid"
-              : "Unpaid"
-            : "Unpaid",
+          id: item._id,
+          username: marzbanAccount.username,
+          tarif: item.Tariff,
+          data_limit: marzbanAccount.data_limit,
+          data_limit_string: Helper.CalculateTraffic(marzbanAccount.data_limit),
+          used_traffic: marzbanAccount.used_traffic,
+          used_traffic_string: Helper.CalculateTraffic(
+            marzbanAccount.used_traffic
+          ),
+          expire: marzbanAccount.expire,
+          expire_string: Helper.CalculateRemainDate(marzbanAccount.expire),
+          status: marzbanAccount.status,
+          subscription_url:
+            Helper.GetSubscriptionURL() + marzbanAccount.subscription_url,
+          online: Helper.IsOnline(marzbanAccount.online_at),
+          online_at: Helper.CalculateOnlineDate(marzbanAccount.online_at),
+          sub_updated_at: Helper.CalculateOnlineDate(
+            marzbanAccount.sub_updated_at
+          ),
+          sub_last_user_agent: marzbanAccount.sub_last_user_agent,
+          payed: item.Payed ? "Paid" : "Unpaid",
         };
       });
 
-      res.status(200).json(accounts);
+      const filteredAccounts = accounts.filter((acc) => acc.data_limit);
+
+      res.status(200).json(filteredAccounts);
     } catch (error) {
       next(error);
     }
@@ -306,6 +323,80 @@ class MarzbanController {
           headers: { Authorization: req.headers.authorization },
         }
       );
+
+      res.status(200).json(result.data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static RenewAccount: RequestHandler = async (req, res, next) => {
+    try {
+      const { tariffId, username } = req.body as {
+        tariffId: string;
+        username: string;
+      };
+
+      if (username && username === "") {
+        res.status(404).json("Username not Found");
+        return;
+      }
+
+      if (tariffId && tariffId === "") {
+        res.status(404).json("TariffId not Found");
+        return;
+      }
+
+      const tariff = await Tariff.findOne({
+        _id: new Types.ObjectId(tariffId),
+      });
+
+      if (!tariff) {
+        res.status(404).json("Tariff not Found");
+        return;
+      }
+
+      const seller = await Seller.findOne({ Title: req.params.seller });
+
+      if (!seller) {
+        res.status(404).json("Seller not Found");
+        return;
+      }
+
+      const currentDate = new Date();
+
+      currentDate.setDate(currentDate.getDate() + (tariff.Duration ?? 0));
+      currentDate.setHours(23, 59, 59);
+
+      const expireTimestamp = Math.floor(currentDate.getTime() / 1000);
+
+      let apiURL = Helper.GetMarzbanURL() + "/api/user/" + username;
+      const result = await axios.put(
+        apiURL,
+        {
+          expire: expireTimestamp,
+          data_limit: (tariff?.DataLimit ?? 0) * 1024 * 1024 * 1024,
+        },
+        {
+          headers: { Authorization: req.headers.authorization },
+        }
+      );
+
+      apiURL = Helper.GetMarzbanURL() + "/api/user/" + username + "/reset";
+      const resultReset = await axios.post(
+        apiURL,
+        {},
+        {
+          headers: { Authorization: req.headers.authorization },
+        }
+      );
+
+      const account = new Account();
+      account.Username = username;
+      account.Seller = seller._id;
+      account.Tariff = tariff.Title;
+      account.Payed = false;
+      await account.save();
 
       res.status(200).json(result.data);
     } catch (error) {
