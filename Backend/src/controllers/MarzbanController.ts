@@ -125,8 +125,9 @@ class MarzbanController {
           expire: marzbanAccount.expire,
           expire_string: Helper.CalculateRemainDate(marzbanAccount.expire),
           status: marzbanAccount.status,
-          subscription_url:
-            Helper.GetSubscriptionURL() + marzbanAccount.subscription_url,
+          subscription_url: marzbanAccount.subscription_url.includes("https")
+            ? marzbanAccount.subscription_url
+            : Helper.GetSubscriptionURL() + marzbanAccount.subscription_url,
           online: Helper.IsOnline(marzbanAccount.online_at),
           online_at: Helper.CalculateOnlineDate(marzbanAccount.online_at),
           sub_updated_at: Helper.CalculateOnlineDate(
