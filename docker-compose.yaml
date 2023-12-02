@@ -1,17 +1,17 @@
 services:
-  marzban-seller-panel-frontend:
-    image: mehdizadehasma/marzban-seller-panel-frontend:latest
+  frontend:
+    image: marzban-seller-panel-frontend:dev
     restart: always
     volumes:
-      - ./config.json:/frontend/data/config.json
-      - ./logo.gif:/frontend/logo.gif
+      - ./data:/frontend/data
+    #   - ./public/logo.gif:/frontend/logo.gif
     ports:
       - 3000:3000
     depends_on:
-      - marzban-seller-panel-backend
+      - backend
 
-  marzban-seller-panel-backend:
-    image: mehdizadehasma/marzban-seller-panel-backend:latest
+  backend:
+    image: marzban-seller-panel-backend:dev
     restart: always
     env_file: .env
     volumes:
@@ -27,4 +27,4 @@ services:
     ports:
       - 8443:8443
     depends_on:
-      - marzban-seller-panel-frontend
+      - frontend
