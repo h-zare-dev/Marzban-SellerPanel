@@ -17,7 +17,7 @@ RUN npm run build
 
 # Stage 3: run
 FROM node:slim
-WORKDIR /app
+WORKDIR /backend
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
 
