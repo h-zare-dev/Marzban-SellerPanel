@@ -23,7 +23,7 @@ class Helper {
       }
       throw new Error("Marzban_URL doestnt Exist in env File!");
     }
-    return this.marzbanURL;
+    return this.subscriptionURL;
   }
 
   static GetMarzbanUsername() {
