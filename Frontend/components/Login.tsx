@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { Image } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -14,6 +14,7 @@ export default function Login() {
   const [Loading, setLoading] = useState(false);
   const UsernameText = useRef<HTMLInputElement | null>(null);
   const PasswordText = useRef<HTMLInputElement | null>(null);
+  const Message = useRef<HTMLHeadingElement | null>(null);
 
   useEffect(() => {
     const getConfig = async () => {
@@ -24,9 +25,8 @@ export default function Login() {
   }, [setConfig]);
 
   const Login_Click = async () => {
-    if (!Loading) {
-      setLoading(true);
-      // try {
+    setLoading(true);
+    try {
       if (config.BACKEND_URL) {
         const url = new URL("api/marzban/logintomarzban", config.BACKEND_URL);
 
@@ -34,19 +34,29 @@ export default function Login() {
           username: UsernameText.current?.value,
           password: PasswordText?.current?.value,
         });
-        if (resultAccounts.status == 200 && UsernameText.current?.value) {
+        if (resultAccounts.status == 200) {
           setUser({
             Username: resultAccounts.data.Username,
             Token: resultAccounts.data.Token,
             Limit: resultAccounts.data.Limit,
           });
           router.push("/dashboard");
-          setLoading(false);
+        } else {
+          if (Message.current)
+            Message.current.innerText = "Something Is Wrong!";
         }
       }
-      // } catch (error) {
-      //   console.log(error);
-      // }
+    } catch (error: any) {
+      console.log(error);
+      if (Message.current) {
+        if (error.message == "Network Error")
+          Message.current.innerText = "Backend Is Not Available";
+
+        if (error.response.data.Message == "Invalid Account Information")
+          Message.current.innerText = "Invalid Username or Password";
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,6 +104,12 @@ export default function Login() {
         />
         {Loading ? "" : "LOGIN"}
       </Button>
+
+      <h6
+        id="message"
+        className="text-danger py-3 text-center"
+        ref={Message}
+      ></h6>
     </div>
   );
 }
