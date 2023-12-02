@@ -24,4 +24,4 @@ COPY --from=builder /app/package.json ./
 
 RUN npm install --production
 
-CMD ["npm", "run", "start"]
+CMD ["npm" "start"]
