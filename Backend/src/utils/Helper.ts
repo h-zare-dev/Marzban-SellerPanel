@@ -68,7 +68,7 @@ class Helper {
     if (online_at != null) {
       const diffTime = new Date().getTime() - new Date(online_at).getTime();
       const remainMinutes = Math.ceil(diffTime / (1000 * 60)) - 1;
-      if (remainMinutes < 2) return "Online";
+      if (remainMinutes < 3) return "Online";
       else return "Offline";
     }
     return "Never";
@@ -80,7 +80,8 @@ class Helper {
       const remainMinutes = Math.ceil(diffTime / (1000 * 60)) - 1;
       if (remainMinutes > 1440)
         return Math.floor(remainMinutes / 1440) + " Days ago";
-      if (remainMinutes > 60)
+      else if (remainMinutes < 3) return "Online";
+      else if (remainMinutes > 60)
         return (
           Math.floor(remainMinutes / 60) +
           " Hours " +

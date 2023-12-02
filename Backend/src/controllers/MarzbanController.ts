@@ -39,6 +39,7 @@ class MarzbanController {
 
       const seller = await Seller.findOne({
         Username: username,
+        Password: password,
       });
 
       if (seller) {
@@ -66,7 +67,7 @@ class MarzbanController {
           Limit: seller.Limit - totalUnpaid,
         });
       } else {
-        res.status(500).json({ Message: "something is wrong!" });
+        res.status(500).json({ Message: "Invalid Account Information" });
       }
     } catch (error) {
       next(error);
