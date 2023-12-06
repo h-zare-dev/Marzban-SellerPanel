@@ -260,7 +260,7 @@ export default function AccountList() {
   };
 
   const onDeleteClick = (row: AccountType) => {
-    if (row.payed !== "Paid" && !row.used_traffic_string.includes("GB")) {
+    if (row.payed !== "Paid" && row.used_traffic < 1.2 * 1024 * 1024 * 1024) {
       setSelectedAccount(row);
       refDeleteModal.current?.Show(row.username);
     }
