@@ -59,17 +59,21 @@ class AccountController {
   };
   static PayAccount: RequestHandler = async (req, res, next) => {
     try {
-      const accounts = req.body as {
+      const accountNames = req.body as {
         Username: string;
       }[];
 
-      for (const acc of accounts) {
-        const account = await Account.findOne(acc);
+      for (const acc of accountNames) {
+        const accounts = await Account.find({
+          Username: acc.Username,
+          Payed: false,
+        });
 
-        if (account) {
-          account.Payed = true;
-          await account.save();
-        }
+        if (accounts)
+          for (const account of accounts) {
+            account.Payed = true;
+            await account.save();
+          }
       }
 
       res.status(200).json("Pay Success!");
