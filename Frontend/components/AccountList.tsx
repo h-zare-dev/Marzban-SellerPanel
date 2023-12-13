@@ -50,7 +50,7 @@ interface AccountType {
 export default function AccountList() {
   const { user, config, setUser } = useMyContext();
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [accountList, setAccountList] = useState<AccountType[]>([]);
 
   const [selectedLink, setSelectedLink] = useState("");
@@ -311,7 +311,7 @@ export default function AccountList() {
   }, [config.BACKEND_URL, user.Token, user.Username]);
 
   useEffect(() => {
-    if (user.Token !== "") LoadAccount();
+    // if (user.Token !== "") LoadAccount();
   }, [LoadAccount, user.Token]);
 
   const BtnRefreh_Click = () => {
@@ -393,6 +393,10 @@ export default function AccountList() {
         <div className="col-12">
           <div className="ContainerGrid">
             <DataGrid
+              initialState={{
+                pagination: { paginationModel: { pageSize: 10 } },
+              }}
+              pageSizeOptions={[10, 25, 50, 100]}
               className="Grid"
               rows={accountList}
               columns={columns}

@@ -78,11 +78,16 @@ class MarzbanController {
     try {
       const apiURL = Helper.GetMarzbanURL() + "/api/users";
 
+      console.log(
+        "Start Getting From Marzban",
+        new Date().toLocaleTimeString()
+      );
+
       const config = {
         headers: { Authorization: req.headers.authorization },
         params: {
           // offset: 0,
-          // limit: 100,
+          // limit: 10,
           username: req.params.seller,
         },
       };
@@ -93,12 +98,19 @@ class MarzbanController {
         };
       } = await axios.get(apiURL, config);
 
+      console.log("End Getting From Marzban", new Date().toLocaleTimeString());
+
+      console.log(
+        "Start Getting From MongoDB",
+        new Date().toLocaleTimeString()
+      );
       const seller = await Seller.findOne({ Title: req.params.seller });
 
       const sellerAccounts = await Account.find({
         Seller: new Types.ObjectId(seller?._id),
       });
 
+      console.log("End Getting From MongoDB", new Date().toLocaleTimeString());
       const accounts = sellerAccounts.map((item) => {
         const marzbanAccount = result.data.users.filter(
           (account) => account.username == item.Username
@@ -114,6 +126,7 @@ class MarzbanController {
 
         return {
           id: item._id,
+          counter: +marzbanAccount.username.replace(req.params.seller, ""),
           username: marzbanAccount.username,
           tarif: item.Tariff,
           data_limit: marzbanAccount.data_limit,
@@ -138,8 +151,20 @@ class MarzbanController {
         };
       });
 
-      const filteredAccounts = accounts.filter((acc) => acc.data_limit);
+      const filteredAccounts = accounts
+        .filter((acc) => acc.data_limit)
+        .sort((a, b) => {
+          if (a.counter && b.counter) {
+            if (a.counter > b.counter) return -1;
+            if (a.counter < b.counter) return 1;
+          }
+          return 0;
+        });
 
+      console.log(
+        "End Getting All --------------------",
+        new Date().toLocaleTimeString()
+      );
       res.status(200).json(filteredAccounts);
     } catch (error) {
       next(error);
