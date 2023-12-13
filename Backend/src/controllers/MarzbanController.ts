@@ -79,7 +79,7 @@ class MarzbanController {
       const apiURL = Helper.GetMarzbanURL() + "/api/users";
 
       console.log(
-        "Start Getting From Marzban",
+        "Start Getting From Marzban -- " + req.params.seller,
         new Date().toLocaleTimeString()
       );
 
@@ -98,10 +98,13 @@ class MarzbanController {
         };
       } = await axios.get(apiURL, config);
 
-      console.log("End Getting From Marzban", new Date().toLocaleTimeString());
+      console.log(
+        "End Getting From Marzban -- " + req.params.seller,
+        new Date().toLocaleTimeString()
+      );
 
       console.log(
-        "Start Getting From MongoDB",
+        "Start Getting From MongoDB -- " + req.params.seller,
         new Date().toLocaleTimeString()
       );
       const seller = await Seller.findOne({ Title: req.params.seller });
@@ -110,7 +113,10 @@ class MarzbanController {
         Seller: new Types.ObjectId(seller?._id),
       });
 
-      console.log("End Getting From MongoDB", new Date().toLocaleTimeString());
+      console.log(
+        "End Getting From MongoDB -- " + req.params.seller,
+        new Date().toLocaleTimeString()
+      );
       const accounts = sellerAccounts.map((item) => {
         const marzbanAccount = result.data.users.filter(
           (account) => account.username == item.Username
@@ -128,7 +134,7 @@ class MarzbanController {
           id: item._id,
           counter: +marzbanAccount.username.replace(req.params.seller, ""),
           username: marzbanAccount.username,
-          tarif: item.Tariff,
+          package: item.Tariff,
           data_limit: marzbanAccount.data_limit,
           data_limit_string: Helper.CalculateTraffic(marzbanAccount.data_limit),
           used_traffic: marzbanAccount.used_traffic,
@@ -162,7 +168,7 @@ class MarzbanController {
         });
 
       console.log(
-        "End Getting All --------------------",
+        `End Getting All for ${req.params.seller}--------------------`,
         new Date().toLocaleTimeString()
       );
       res.status(200).json(filteredAccounts);

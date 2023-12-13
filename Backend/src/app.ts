@@ -50,7 +50,7 @@ app.use(
     res: Response,
     next: NextFunction
   ) => {
-    console.log(err); //replace with logger later
+    console.log(new Date().toLocaleTimeString(), err); //replace with logger later
     if (res.headersSent) {
       return next(err);
     }
@@ -84,5 +84,8 @@ mongoose
     console.log(`Server is Startig at https://localhost:8443`);
   })
   .catch((err: Error) => {
-    console.log(`MongoDb Connection :  ${err.message}`);
+    console.log(
+      `MongoDb Connection :  ${err.message}`,
+      new Date().toLocaleTimeString()
+    );
   });
