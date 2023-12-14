@@ -33,7 +33,7 @@ import RenewModal from "./RenewModal";
 interface AccountType {
   show: string;
   username: string;
-  tarif: string;
+  package: string;
   subscription_url: string;
   online: string;
   online_at: string;
@@ -122,7 +122,7 @@ export default function AccountList() {
         RenderOnline(params.value),
     },
     { field: "online_at", headerName: "Online", width: 180 },
-    { field: "tarif", headerName: "Tarif", width: 170 },
+    { field: "package", headerName: "Package", width: 170 },
     { field: "data_limit_string", headerName: "Limit", width: 110 },
     {
       field: "used_traffic_string",
@@ -394,7 +394,7 @@ export default function AccountList() {
           <div className="ContainerGrid">
             <DataGrid
               initialState={{
-                pagination: { paginationModel: { pageSize: 10 } },
+                pagination: { paginationModel: { pageSize: 100 } },
               }}
               pageSizeOptions={[10, 25, 50, 100]}
               className="Grid"

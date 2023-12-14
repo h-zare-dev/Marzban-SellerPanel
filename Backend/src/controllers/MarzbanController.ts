@@ -160,10 +160,8 @@ class MarzbanController {
       const filteredAccounts = accounts
         .filter((acc) => acc.data_limit)
         .sort((a, b) => {
-          if (a.counter && b.counter) {
-            if (a.counter > b.counter) return -1;
-            if (a.counter < b.counter) return 1;
-          }
+          if (a.counter && b.counter)
+            return b.payed.localeCompare(a.payed) || b.counter - a.counter;
           return 0;
         });
 
