@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
@@ -43,23 +43,52 @@ class MarzbanController {
       });
 
       if (seller) {
-        const accounts = await Account.find({ Seller: seller, Payed: false });
-
         let totalUnpaid = 0;
-        accounts.map((account) => {
-          const limit = +account.Tariff.split("GB")[0];
-          if (limit) totalUnpaid += limit;
-        });
 
-        const resultLogin: { data: { access_token: string } } =
-          await axios.post(
-            apiURL,
-            {
-              username: Helper.GetMarzbanUsername(),
-              password: Helper.GetMarzbanPassword(),
-            },
-            config
+        const CalculateTotalUnpaid = async () => {
+          console.log(
+            "Start Calculate totalUnpaid -- " + seller.Title,
+            new Date().toLocaleTimeString()
           );
+          const accounts = await Account.find({
+            Seller: seller,
+            Payed: false,
+          });
+
+          const tariffs = await Tariff.find({ IsFree: false });
+
+          accounts.map((account) => {
+            const tariff = tariffs.find(
+              (tariff) => tariff._id.toString() === account.TariffId?.toString()
+            );
+            if (tariff) totalUnpaid += tariff.DataLimit ?? 0;
+          });
+
+          console.log(
+            "End Calculate totalUnpaid -- " + totalUnpaid,
+            new Date().toLocaleTimeString()
+          );
+        };
+        await CalculateTotalUnpaid();
+
+        console.log(
+          "Start Login to Marzban -- " + seller.Title,
+          new Date().toLocaleTimeString()
+        );
+
+        const resultLogin = await axios.post(
+          apiURL,
+          {
+            username: Helper.GetMarzbanUsername(),
+            password: Helper.GetMarzbanPassword(),
+          },
+          config
+        );
+
+        console.log(
+          "End Login to Marzban -- " + seller.Title,
+          new Date().toLocaleTimeString()
+        );
 
         res.status(200).json({
           Token: resultLogin.data.access_token,
@@ -76,32 +105,26 @@ class MarzbanController {
 
   static GetAccounts: RequestHandler = async (req, res, next) => {
     try {
-      const apiURL = Helper.GetMarzbanURL() + "/api/users";
+      let resultMarzban: AxiosResponse;
 
-      console.log(
-        "Start Getting From Marzban -- " + req.params.seller,
-        new Date().toLocaleTimeString()
-      );
-
-      const config = {
-        headers: { Authorization: req.headers.authorization },
-        params: {
-          // offset: 0,
-          // limit: 10,
-          username: req.params.seller,
-        },
+      const getMarzbanAccounts = async () => {
+        console.log(
+          "Start Getting From Marzban -- " + req.params.seller,
+          new Date().toLocaleTimeString()
+        );
+        resultMarzban = await this.GetMarzbanAccounts(
+          req.headers.authorization,
+          req.params.seller,
+          +req.params.offset,
+          +req.params.limit
+        );
+        console.log(
+          "End Getting From Marzban -- " + req.params.seller,
+          new Date().toLocaleTimeString()
+        );
       };
 
-      const result: {
-        data: {
-          users: MarzbanAccount[];
-        };
-      } = await axios.get(apiURL, config);
-
-      console.log(
-        "End Getting From Marzban -- " + req.params.seller,
-        new Date().toLocaleTimeString()
-      );
+      await getMarzbanAccounts();
 
       console.log(
         "Start Getting From MongoDB -- " + req.params.seller,
@@ -109,17 +132,30 @@ class MarzbanController {
       );
       const seller = await Seller.findOne({ Title: req.params.seller });
 
-      const sellerAccounts = await Account.find({
-        Seller: new Types.ObjectId(seller?._id),
-      });
+      console.log(req.params.isall);
+
+      // const sellerAccounts = await Account.find({
+      //   Seller: new Types.ObjectId(seller?._id),
+      // });
+
+      const sellerAccounts =
+        req.params.isall === "true"
+          ? await Account.find({
+              Seller: new Types.ObjectId(seller?._id),
+            })
+          : await Account.find({
+              Seller: new Types.ObjectId(seller?._id),
+              Payed: false,
+            });
 
       console.log(
         "End Getting From MongoDB -- " + req.params.seller,
         new Date().toLocaleTimeString()
       );
+
       const accounts = sellerAccounts.map((item) => {
-        const marzbanAccount = result.data.users.filter(
-          (account) => account.username == item.Username
+        const marzbanAccount = resultMarzban.data.users.filter(
+          (account: MarzbanAccount) => account.username == item.Username
         )[0];
 
         if (!marzbanAccount)
@@ -149,7 +185,7 @@ class MarzbanController {
             : Helper.GetSubscriptionURL() + marzbanAccount.subscription_url,
           online: Helper.IsOnline(marzbanAccount.online_at),
           online_at: Helper.CalculateOnlineDate(marzbanAccount.online_at),
-          sub_updated_at: Helper.CalculateOnlineDate(
+          sub_updated_at: Helper.CalculateUpdateSubscriptionDate(
             marzbanAccount.sub_updated_at
           ),
           sub_last_user_agent: marzbanAccount.sub_last_user_agent,
@@ -157,13 +193,17 @@ class MarzbanController {
         };
       });
 
+      // const filteredAccounts = accounts
+      //   .filter((acc) => acc.data_limit)
+      //   .sort((a, b) => {
+      //     if (a.counter && b.counter)
+      //       return b.payed.localeCompare(a.payed) || b.counter - a.counter;
+      //     return 0;
+      //   });
+
       const filteredAccounts = accounts
         .filter((acc) => acc.data_limit)
-        .sort((a, b) => {
-          if (a.counter && b.counter)
-            return b.payed.localeCompare(a.payed) || b.counter - a.counter;
-          return 0;
-        });
+        .reverse();
 
       console.log(
         `End Getting All for ${req.params.seller}--------------------`,
@@ -284,6 +324,7 @@ class MarzbanController {
       account.Username = generateUsername;
       account.Seller = seller._id;
       account.Tariff = tariff.Title;
+      account.TariffId = tariff._id;
       account.Payed = false;
       await account.save();
 
@@ -426,6 +467,7 @@ class MarzbanController {
       account.Username = username;
       account.Seller = seller._id;
       account.Tariff = tariff.Title;
+      account.TariffId = tariff._id;
       account.Payed = false;
       await account.save();
 
@@ -444,23 +486,18 @@ class MarzbanController {
         headers: { Authorization: req.headers.authorization },
       });
 
-      if (resultget.status == 200 && resultget.data) {
+      if (resultget.data) {
         const used_traffic =
-          (resultget?.data?.used_traffic ?? 0) / (1024 * 1024 * 1024);
+          (resultget.data.used_traffic ?? 0) / (1024 * 1024 * 1024);
 
         if (used_traffic < 1.2) {
-          const result = await axios.delete(apiURL, {
+          await axios.delete(apiURL, {
             headers: { Authorization: req.headers.authorization },
           });
 
-          if (result.status == 200) {
-            const result = await Account.findOneAndRemove({
-              Username: req.params.username,
-            });
-
-            if (result?.Username !== req.params.username)
-              throw new Error("User Not Found");
-          }
+          await Account.findOneAndRemove({
+            Username: req.params.username,
+          });
 
           res.status(200).json({ message: "Delete Success!" });
         }
@@ -494,6 +531,26 @@ class MarzbanController {
       return { vmess: vmesses, vless: vlesses, trojan: trojans };
     }
     throw new Error("No Inbound Found!!");
+  };
+
+  static GetMarzbanAccounts = async (
+    authorization: string | undefined,
+    seller: string,
+    offset: number,
+    limit: number
+  ) => {
+    const apiURL = Helper.GetMarzbanURL() + "/api/users";
+
+    const config = {
+      headers: { Authorization: authorization },
+      params: {
+        username: seller,
+        // offset: offset,
+        // limit: limit,
+      },
+    };
+
+    return axios.get(apiURL, config);
   };
 }
 
