@@ -291,31 +291,34 @@ export default function AccountList() {
       }
   };
 
-  const LoadAccount = useCallback(async () => {
-    try {
-      StartLoading();
-      let url = new URL(
-        "api/marzban/accounts/" + user.Username,
-        config.BACKEND_URL
-      );
-      const resultAccounts = await axios.get(url.toString(), {
-        headers: { Authorization: "Bearer " + user.Token },
-      });
-      const accounts = resultAccounts.data;
-      setAccountList(accounts);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [config.BACKEND_URL, user.Token, user.Username]);
+  const LoadAccount = useCallback(
+    async (IsAll: boolean = false) => {
+      try {
+        StartLoading();
+        let url = new URL(
+          `api/marzban/accounts/${user.Username}/${IsAll}/${0}/${10}`,
+          config.BACKEND_URL
+        );
+        const resultAccounts = await axios.get(url.toString(), {
+          headers: { Authorization: "Bearer " + user.Token },
+        });
+        const accounts = resultAccounts.data;
+        setAccountList(accounts);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [config.BACKEND_URL, user.Token, user.Username]
+  );
 
   useEffect(() => {
-    // if (user.Token !== "") LoadAccount();
+    if (user.Token !== "") LoadAccount();
   }, [LoadAccount, user.Token]);
 
   const BtnRefreh_Click = () => {
-    LoadAccount();
+    LoadAccount(true);
   };
 
   const DeleteAccount = async () => {
