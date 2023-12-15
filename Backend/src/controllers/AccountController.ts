@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 
 import Account from "../models/Account";
+import Tariff from "../models/Tariff";
 
 class AccountController {
   static GetAccountList: RequestHandler = async (req, res, next) => {
@@ -29,14 +30,14 @@ class AccountController {
 
   static AddAccount: RequestHandler = async (req, res, next) => {
     try {
-      const { Username, Tariff, SellerID } = req.body as {
+      const { Username, TariffID, SellerID } = req.body as {
         Username: string | undefined;
-        Tariff: string | undefined;
+        TariffID: string | undefined;
         SellerID: string | undefined;
       };
       const account = new Account({
         Username: Username,
-        Tariff: Tariff,
+        TariffId: new Types.ObjectId(TariffID),
         Seller: new Types.ObjectId(SellerID),
       });
 
@@ -46,6 +47,7 @@ class AccountController {
       next(error);
     }
   };
+
   static RemoveAccount: RequestHandler = async (req, res, next) => {
     try {
       const id: string = req.params.id;
@@ -57,6 +59,7 @@ class AccountController {
       next(error);
     }
   };
+
   static PayAccount: RequestHandler = async (req, res, next) => {
     try {
       const accountNames = req.body as {
@@ -77,6 +80,31 @@ class AccountController {
       }
 
       res.status(200).json("Pay Success!");
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static ConvertTariff: RequestHandler = async (req, res, next) => {
+    try {
+      let count = 0;
+      const tariffs = await Tariff.find();
+      const accounts = await Account.find();
+
+      if (accounts)
+        for (const account of accounts) {
+          const tariff = tariffs.find(
+            (tariff) => tariff.Title == account.Tariff
+          );
+          console.log(account.Username);
+          if (tariff && !account.TariffId) {
+            account.TariffId = tariff?._id;
+            await account.save();
+            count++;
+          }
+        }
+
+      res.status(200).json(`${count} Accounts Converted!`);
     } catch (error) {
       next(error);
     }
