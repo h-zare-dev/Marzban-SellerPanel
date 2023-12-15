@@ -4,7 +4,7 @@ import Tariff from "../models/Tariff";
 class TariffController {
   static GetTariffList: RequestHandler = async (req, res, next) => {
     try {
-      const result = await Tariff.find();
+      const result = await Tariff.find({ IsVisible: true });
       res.status(200).json(result);
     } catch (error) {
       next(error);

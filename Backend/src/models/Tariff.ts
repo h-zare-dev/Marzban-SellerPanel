@@ -6,6 +6,10 @@ const schema = new mongoose.Schema({
   DataLimit: Number,
 
   Duration: Number,
+
+  IsFree: Boolean,
+
+  IsVisible: Boolean,
 });
 
 export default mongoose.model("Tariff", schema);
