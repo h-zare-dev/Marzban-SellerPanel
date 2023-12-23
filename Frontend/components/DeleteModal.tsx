@@ -26,7 +26,7 @@ const DeleteModal = forwardRef<ForwardRefHandle, PropsType>((props, ref) => {
 
   const btnYes_Click = async () => {
     props.DeletingHandler();
-    btnNo_Click();
+    setUsername("");
   };
 
   return (
