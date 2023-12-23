@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Image } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -10,8 +10,10 @@ import { useMyContext } from "@/context/MyContext";
 
 export default function Login() {
   const router = useRouter();
+
   const { setUser, config, setConfig } = useMyContext();
   const [Loading, setLoading] = useState(false);
+
   const UsernameText = useRef<HTMLInputElement | null>(null);
   const PasswordText = useRef<HTMLInputElement | null>(null);
   const Message = useRef<HTMLHeadingElement | null>(null);
@@ -37,6 +39,7 @@ export default function Login() {
         if (resultAccounts.status == 200) {
           setUser({
             Username: resultAccounts.data.Username,
+            IsAdmin: resultAccounts.data.IsAdmin === "true",
             Token: resultAccounts.data.Token,
             Limit: resultAccounts.data.Limit,
           });
@@ -44,7 +47,11 @@ export default function Login() {
         } else {
           if (Message.current)
             Message.current.innerText = "Something Is Wrong!";
+          setLoading(false);
         }
+      } else if (Message.current) {
+        Message.current.innerText = "BACKEND_URL doesn't exist!";
+        setLoading(false);
       }
     } catch (error: any) {
       console.log(error);
@@ -55,7 +62,6 @@ export default function Login() {
         if (error.response.data.Message == "Invalid Account Information")
           Message.current.innerText = "Invalid Username or Password";
       }
-    } finally {
       setLoading(false);
     }
   };
