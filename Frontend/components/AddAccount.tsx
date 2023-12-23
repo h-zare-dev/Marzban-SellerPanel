@@ -9,16 +9,17 @@ interface TariffType {
   Title: string;
   DataLimit: number;
   Duration: number;
+  IsFree: boolean;
+  IsVisible: boolean;
 }
 
 interface PropsType {
-  StartAdding?: () => void;
-  EndAdding?: () => void;
+  onAdding?: (tariff: TariffType) => void;
   Mode: string;
 }
 
 const AddAccount = forwardRef<HTMLSelectElement, PropsType>((props, ref) => {
-  const { user, config, setUser } = useMyContext();
+  const { user, config } = useMyContext();
   const [tariffList, setTariffList] = useState<TariffType[]>([]);
   const selectTariff = useRef<HTMLSelectElement | null>(null);
 
@@ -36,34 +37,10 @@ const AddAccount = forwardRef<HTMLSelectElement, PropsType>((props, ref) => {
   }, [config.BACKEND_URL, user.Token]);
 
   const BtnAdd_Click = async () => {
-    if (props.StartAdding) props.StartAdding();
-
     if (selectTariff.current) {
       const tariffId = selectTariff.current?.value;
-
-      const dataLimit = tariffList.filter((t) => t._id == tariffId)[0]
-        .DataLimit;
-
-      if (user.Limit >= dataLimit)
-        try {
-          const url = new URL("api/marzban/account", config.BACKEND_URL);
-
-          await axios.post(
-            url.toString(),
-            {
-              username: user.Username,
-              tariffId: tariffId,
-            },
-            {
-              headers: { Authorization: "Bearer " + user.Token },
-            }
-          );
-          user.Limit -= dataLimit;
-          setUser({ ...user, Limit: user.Limit });
-        } catch (error) {
-          console.log(error);
-        }
-      if (props.EndAdding) props.EndAdding();
+      const tariff = tariffList.filter((t) => t._id == tariffId)[0];
+      if (props.onAdding) props.onAdding(tariff);
     }
   };
 

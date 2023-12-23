@@ -2,7 +2,12 @@
 
 import React, { createContext, useContext } from "react";
 
-type UserType = { Username: string; Token: string; Limit: number };
+type UserType = {
+  Username: string;
+  IsAdmin: boolean;
+  Token: string;
+  Limit: number;
+};
 
 export interface JsonData {
   BACKEND_URL?: string;
@@ -24,7 +29,12 @@ interface PropsType {
 }
 
 export const MyContextProvider: React.FC<PropsType> = (props) => {
-  const [user, setUser] = React.useState({ Username: "", Token: "", Limit: 5 });
+  const [user, setUser] = React.useState({
+    Username: "",
+    IsAdmin: false,
+    Token: "",
+    Limit: 5,
+  });
   const [config, setConfig] = React.useState({});
 
   return (

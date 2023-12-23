@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 
 import { useMyContext } from "@/context/MyContext";
@@ -15,7 +16,7 @@ export default function Dashboard() {
   }, [user.Token, router]);
 
   const BtnExit_Click = () => {
-    setUser({ Token: "", Username: "", Limit: 0 });
+    setUser({ Token: "", IsAdmin: false, Username: "", Limit: 0 });
     router.push("/");
   };
 
@@ -49,6 +50,7 @@ export default function Dashboard() {
         <div className="col">
           <AccountList></AccountList>
         </div>
+        <div className="center">v1.4</div>
       </div>
     </div>
   );
