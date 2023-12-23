@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 
-const schema = new mongoose.Schema({
+export const AccountSchema = new mongoose.Schema({
   Username: { type: String, index: true },
 
   Tariff: { type: String, required: [true, "Tariff is required"] },
 
   TariffId: {
     type: mongoose.Schema.Types.ObjectId,
+    required: [true, "Tariff is required"],
     ref: "Tariff",
     index: true,
   },
@@ -21,4 +22,4 @@ const schema = new mongoose.Schema({
   Payed: { type: Boolean, default: false },
 });
 
-export default mongoose.model("Account", schema);
+export default mongoose.model("Account", AccountSchema);

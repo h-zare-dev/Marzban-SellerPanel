@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const schema = new mongoose.Schema({
+export const SellerSchema = new mongoose.Schema({
   Title: { type: String, unique: true, required: [true, "Title is required"] },
 
   Username: {
@@ -13,7 +13,7 @@ const schema = new mongoose.Schema({
 
   Counter: { type: Number, default: 0 },
 
-  Limit:{ type: Number, default: 0 },
+  Limit: { type: Number, default: 0 },
 
   Status: {
     type: String,
@@ -25,4 +25,4 @@ const schema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("Seller", schema);
+export default mongoose.model("Seller", SellerSchema);

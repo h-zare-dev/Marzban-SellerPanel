@@ -96,7 +96,6 @@ class AccountController {
           const tariff = tariffs.find(
             (tariff) => tariff.Title == account.Tariff
           );
-          console.log(account.Username);
           if (tariff && !account.TariffId) {
             account.TariffId = tariff?._id;
             await account.save();

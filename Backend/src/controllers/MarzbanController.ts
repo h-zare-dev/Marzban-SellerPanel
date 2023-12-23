@@ -7,6 +7,7 @@ import Helper from "../utils/Helper";
 import Account from "../models/Account";
 import Seller from "../models/Seller";
 import Tariff from "../models/Tariff";
+import ConfigFile from "../utils/Config";
 
 interface MarzbanAccount {
   username: string;
@@ -23,7 +24,7 @@ interface MarzbanAccount {
 class MarzbanController {
   static LoginToMarzbanAPI: RequestHandler = async (req, res, next) => {
     try {
-      const apiURL = Helper.GetMarzbanURL() + "/api/admin/token";
+      const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/admin/token";
 
       const config = {
         headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -37,62 +38,49 @@ class MarzbanController {
       username = username.trim();
       password = password.trim();
 
+      const sellerUsername = await ConfigFile.GetSellerUsername();
+      const sellerPassword = await ConfigFile.GetSellerPassword();
+
+      console.log("Start Login to Marzban ", new Date().toLocaleTimeString());
+
+      const resultLogin = await axios.post(
+        apiURL,
+        {
+          username: await ConfigFile.GetMarzbanUsername(),
+          password: await ConfigFile.GetMarzbanPassword(),
+        },
+        config
+      );
+
+      console.log("End Login to Marzban ", new Date().toLocaleTimeString());
+
+      const IsValidUser = false;
+
+      if (username.toLowerCase() == sellerUsername.toLowerCase()) {
+        if (password !== sellerPassword) {
+          res.status(500).json({ Message: "Invalid Account Information" });
+          return;
+        }
+        res.status(200).json({
+          Token: resultLogin.data.access_token,
+          Username: sellerUsername,
+          IsAdmin: true,
+          Limit: 0,
+        });
+        return;
+      }
       const seller = await Seller.findOne({
         Username: username,
         Password: password,
       });
 
       if (seller) {
-        let totalUnpaid = 0;
-
-        const CalculateTotalUnpaid = async () => {
-          console.log(
-            "Start Calculate totalUnpaid -- " + seller.Title,
-            new Date().toLocaleTimeString()
-          );
-          const accounts = await Account.find({
-            Seller: seller,
-            Payed: false,
-          });
-
-          const tariffs = await Tariff.find({ IsFree: false });
-
-          accounts.map((account) => {
-            const tariff = tariffs.find(
-              (tariff) => tariff._id.toString() === account.TariffId?.toString()
-            );
-            if (tariff) totalUnpaid += tariff.DataLimit ?? 0;
-          });
-
-          console.log(
-            "End Calculate totalUnpaid -- " + totalUnpaid,
-            new Date().toLocaleTimeString()
-          );
-        };
-        await CalculateTotalUnpaid();
-
-        console.log(
-          "Start Login to Marzban -- " + seller.Title,
-          new Date().toLocaleTimeString()
-        );
-
-        const resultLogin = await axios.post(
-          apiURL,
-          {
-            username: Helper.GetMarzbanUsername(),
-            password: Helper.GetMarzbanPassword(),
-          },
-          config
-        );
-
-        console.log(
-          "End Login to Marzban -- " + seller.Title,
-          new Date().toLocaleTimeString()
-        );
+        const totalUnpaid = await this.GetTotalUnpaid(seller);
 
         res.status(200).json({
           Token: resultLogin.data.access_token,
           Username: seller.Title,
+          IsAdmin: false,
           Limit: seller.Limit - totalUnpaid,
         });
       } else {
@@ -107,51 +95,30 @@ class MarzbanController {
     try {
       let resultMarzban: AxiosResponse;
 
-      const getMarzbanAccounts = async () => {
-        console.log(
-          "Start Getting From Marzban -- " + req.params.seller,
-          new Date().toLocaleTimeString()
-        );
-        resultMarzban = await this.GetMarzbanAccounts(
-          req.headers.authorization,
-          req.params.seller,
-          +req.params.offset,
-          +req.params.limit
-        );
-        console.log(
-          "End Getting From Marzban -- " + req.params.seller,
-          new Date().toLocaleTimeString()
-        );
-      };
-
-      await getMarzbanAccounts();
-
       console.log(
-        "Start Getting From MongoDB -- " + req.params.seller,
+        "Start Getting From Marzban ## " + req.params.seller,
         new Date().toLocaleTimeString()
       );
-      const seller = await Seller.findOne({ Title: req.params.seller });
-
-      console.log(req.params.isall);
-
-      // const sellerAccounts = await Account.find({
-      //   Seller: new Types.ObjectId(seller?._id),
-      // });
-
-      const sellerAccounts =
-        req.params.isall === "true"
-          ? await Account.find({
-              Seller: new Types.ObjectId(seller?._id),
-            })
-          : await Account.find({
-              Seller: new Types.ObjectId(seller?._id),
-              Payed: false,
-            });
+      resultMarzban = await this.GetMarzbanAccounts(
+        req.headers.authorization,
+        req.params.seller,
+        +req.params.offset,
+        +req.params.limit
+      );
 
       console.log(
-        "End Getting From MongoDB -- " + req.params.seller,
+        "End Getting From Marzban -- " + resultMarzban.data.users.length,
         new Date().toLocaleTimeString()
       );
+
+      const isAll = req.params.isall === "true";
+
+      const sellerAccounts = await this.GetSellerAccounts(
+        req.params.seller,
+        isAll
+      );
+
+      const subscriptionUrl = await ConfigFile.GetSubscriptionURL();
 
       const accounts = sellerAccounts.map((item) => {
         const marzbanAccount = resultMarzban.data.users.filter(
@@ -182,7 +149,7 @@ class MarzbanController {
           status: marzbanAccount.status,
           subscription_url: marzbanAccount.subscription_url.includes("https")
             ? marzbanAccount.subscription_url
-            : Helper.GetSubscriptionURL() + marzbanAccount.subscription_url,
+            : subscriptionUrl + marzbanAccount.subscription_url,
           online: Helper.IsOnline(marzbanAccount.online_at),
           online_at: Helper.CalculateOnlineDate(marzbanAccount.online_at),
           sub_updated_at: Helper.CalculateUpdateSubscriptionDate(
@@ -193,20 +160,12 @@ class MarzbanController {
         };
       });
 
-      // const filteredAccounts = accounts
-      //   .filter((acc) => acc.data_limit)
-      //   .sort((a, b) => {
-      //     if (a.counter && b.counter)
-      //       return b.payed.localeCompare(a.payed) || b.counter - a.counter;
-      //     return 0;
-      //   });
-
       const filteredAccounts = accounts
         .filter((acc) => acc.data_limit)
         .reverse();
 
       console.log(
-        `End Getting All for ${req.params.seller}--------------------`,
+        `End Getting All for ${req.params.seller}------------------------------------------------------------------`,
         new Date().toLocaleTimeString()
       );
       res.status(200).json(filteredAccounts);
@@ -217,7 +176,7 @@ class MarzbanController {
 
   static AddAccount: RequestHandler = async (req, res, next) => {
     try {
-      const apiURL = Helper.GetMarzbanURL() + "/api/user";
+      const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/user";
 
       const { username, tariffId } = req.body as {
         username: string;
@@ -326,6 +285,7 @@ class MarzbanController {
       account.Tariff = tariff.Title;
       account.TariffId = tariff._id;
       account.Payed = false;
+
       await account.save();
 
       await seller.save();
@@ -339,7 +299,7 @@ class MarzbanController {
   static EditAccount: RequestHandler = async (req, res, next) => {
     try {
       const apiURL =
-        Helper.GetMarzbanURL() + "/api/user/" + req.params.username;
+        (await ConfigFile.GetMarzbanURL()) + "/api/user/" + req.params.username;
 
       const { status } = req.body as {
         status: string;
@@ -375,7 +335,7 @@ class MarzbanController {
   static DisableAccount: RequestHandler = async (req, res, next) => {
     try {
       const apiURL =
-        Helper.GetMarzbanURL() + "/api/user/" + req.params.username;
+        (await ConfigFile.GetMarzbanURL()) + "/api/user/" + req.params.username;
 
       const { status } = req.body as {
         status: string;
@@ -442,7 +402,7 @@ class MarzbanController {
 
       const expireTimestamp = Math.floor(currentDate.getTime() / 1000);
 
-      let apiURL = Helper.GetMarzbanURL() + "/api/user/" + username;
+      let apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/user/" + username;
       const result = await axios.put(
         apiURL,
         {
@@ -454,7 +414,8 @@ class MarzbanController {
         }
       );
 
-      apiURL = Helper.GetMarzbanURL() + "/api/user/" + username + "/reset";
+      apiURL =
+        (await ConfigFile.GetMarzbanURL()) + "/api/user/" + username + "/reset";
       const resultReset = await axios.post(
         apiURL,
         {},
@@ -480,7 +441,7 @@ class MarzbanController {
   static RemoveAccount: RequestHandler = async (req, res, next) => {
     try {
       const apiURL =
-        Helper.GetMarzbanURL() + "/api/user/" + req.params.username;
+        (await ConfigFile.GetMarzbanURL()) + "/api/user/" + req.params.username;
 
       const resultget = await axios.get(apiURL, {
         headers: { Authorization: req.headers.authorization },
@@ -497,6 +458,7 @@ class MarzbanController {
 
           await Account.findOneAndRemove({
             Username: req.params.username,
+            Payed: false,
           });
 
           res.status(200).json({ message: "Delete Success!" });
@@ -512,7 +474,7 @@ class MarzbanController {
     let vlesses: string[] | undefined = undefined;
     let trojans: string[] | undefined = undefined;
 
-    const apiURL = Helper.GetMarzbanURL() + "/api/inbounds";
+    const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/inbounds";
 
     const result = await axios.get(apiURL, {
       headers: { Authorization: authorization },
@@ -539,18 +501,77 @@ class MarzbanController {
     offset: number,
     limit: number
   ) => {
-    const apiURL = Helper.GetMarzbanURL() + "/api/users";
+    const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/users";
+
+    const sellerUsername = await ConfigFile.GetSellerUsername();
+
+    const params = {
+      username:
+        sellerUsername.toLowerCase() === seller.toLowerCase() ? "" : seller,
+      // offset: offset,
+      // limit: limit,
+    };
 
     const config = {
       headers: { Authorization: authorization },
-      params: {
-        username: seller,
-        // offset: offset,
-        // limit: limit,
-      },
+      params: params,
     };
 
     return axios.get(apiURL, config);
+  };
+
+  static GetSellerAccounts = async (sellerTitle: string, IsAll: boolean) => {
+    console.log(
+      "Start Getting From MongoDB ## " + sellerTitle,
+      new Date().toLocaleTimeString()
+    );
+
+    const sellerUsername = await ConfigFile.GetSellerUsername();
+
+    const seller = await Seller.findOne({ Title: sellerTitle });
+
+    let condition = {};
+
+    if (sellerTitle.toLowerCase() !== sellerUsername.toLowerCase())
+      condition = { ...condition, Seller: new Types.ObjectId(seller?._id) };
+
+    if (!IsAll) condition = { ...condition, Payed: false };
+
+    const accounts = await Account.find(condition);
+
+    console.log(
+      "End Getting From MongoDB -- Count : " + accounts.length,
+      new Date().toLocaleTimeString()
+    );
+    return accounts;
+  };
+
+  static GetTotalUnpaid = async (seller: any): Promise<number> => {
+    let totalUnpaid = 0;
+
+    console.log(
+      "Start Calculate totalUnpaid ## " + seller.Title,
+      new Date().toLocaleTimeString()
+    );
+    const accounts = await Account.find({
+      Seller: seller,
+      Payed: false,
+    });
+
+    const tariffs = await Tariff.find({ IsFree: false });
+
+    accounts.map((account) => {
+      const tariff = tariffs.find(
+        (tariff) => tariff._id.toString() === account.TariffId?.toString()
+      );
+      if (tariff) totalUnpaid += tariff.DataLimit ?? 0;
+    });
+
+    console.log(
+      "End Calculate totalUnpaid -- " + totalUnpaid,
+      new Date().toLocaleTimeString()
+    );
+    return totalUnpaid;
   };
 }
 

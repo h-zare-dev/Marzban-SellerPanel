@@ -38,6 +38,7 @@ class TariffController {
       next(error);
     }
   };
+
   static EditTariff: RequestHandler = (req, res, next) => {
     try {
       res.status(200).json({ result: "" });
@@ -45,6 +46,7 @@ class TariffController {
       next(error);
     }
   };
+
   static RemoveTariff: RequestHandler = (req, res, next) => {
     try {
       res.status(200).json({ result: "" });

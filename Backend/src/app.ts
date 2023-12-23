@@ -6,9 +6,6 @@ import express, {
 } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
-import fs from "fs";
 import http from "http";
 import https from "https";
 
@@ -16,19 +13,18 @@ import marzbanRouter from "./routes/MarzbanRouter";
 import sellerRouter from "./routes/SellerRouter";
 import tariffRouter from "./routes/TariffRouter";
 import accountRouter from "./routes/AccountRouter";
-
-const privateKey = fs.readFileSync("certs/key.pem");
-const certificate = fs.readFileSync("certs/fullchain.pem");
-const credentials = { key: privateKey, cert: certificate };
+import Certificate from "./utils/Certificate";
+import Mongoose from "./utils/Mongoose";
+import ConfigFile from "./utils/Config";
 
 const app = express();
+
+const credentials = Certificate.GetCredential();
 
 const httpServer = http.createServer(app);
 const httpsServer = https.createServer(credentials, app);
 
 app.use(bodyParser.json());
-
-dotenv.config();
 
 const corsOptions = {
   origin: "*",
@@ -50,7 +46,7 @@ app.use(
     res: Response,
     next: NextFunction
   ) => {
-    console.log(new Date().toLocaleTimeString(), err); //replace with logger later
+    console.log(err); //replace with logger later
     if (res.headersSent) {
       return next(err);
     }
@@ -63,29 +59,25 @@ app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "app is running!" });
 });
 
-let connectionString = "";
+const Connecting = async () => {
+  try {
+    const marzbanUrl = await ConfigFile.GetMarzbanURL();
+    const sn = await ConfigFile.GetSerialKey();
 
-if (
-  process.env.MONGODB_CONNECTION_STRING &&
-  process.env.MONGODB_CONNECTION_STRING != ""
-)
-  connectionString = process.env.MONGODB_CONNECTION_STRING;
+    const isValidLicense = await Mongoose.CheckLicense(marzbanUrl, sn);
 
-if (connectionString == "") console.log(`MongoDb connection String Not Found`);
+    if (isValidLicense && (await Mongoose.ConnectDbWholeSaler())) {
+      // await Mongoose.AddWholeSaler();
+      httpServer.listen(8080);
+      httpsServer.listen(8443);
+      console.log("Server is Startig at http://localhost:8080");
+      console.log("Server is Startig at https://localhost:8443");
+    } else {
+      console.log("License is not Available or Expired!");
+    }
+  } catch (err) {
+    console.log(`MongoDb Connection :  ${err}`);
+  }
+};
 
-mongoose.set("strictQuery", true);
-
-mongoose
-  .connect(connectionString)
-  .then(() => {
-    httpServer.listen(8080);
-    httpsServer.listen(8443);
-    console.log(`Server is Startig at http://localhost:8080`);
-    console.log(`Server is Startig at https://localhost:8443`);
-  })
-  .catch((err: Error) => {
-    console.log(
-      `MongoDb Connection :  ${err.message}`,
-      new Date().toLocaleTimeString()
-    );
-  });
+Connecting();

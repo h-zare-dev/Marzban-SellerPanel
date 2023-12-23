@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 
-const schema = new mongoose.Schema({
+export const TariffSchema = new mongoose.Schema({
   Title: { type: String, required: [true, "Title is required"] },
 
-  DataLimit: Number,
+  DataLimit: { type: Number, required: [true, "DataLimit is required"] },
 
-  Duration: Number,
+  Duration: { type: Number, required: [true, "Duration is required"] },
 
-  IsFree: Boolean,
+  IsFree: { type: Boolean, default: false },
 
-  IsVisible: Boolean,
+  IsVisible: { type: Boolean, default: true },
 });
 
-export default mongoose.model("Tariff", schema);
+export default mongoose.model("Tariff", TariffSchema);

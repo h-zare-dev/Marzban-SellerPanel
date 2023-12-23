@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 
 import Seller from "../models/Seller";
+import ConfigFile from "../utils/Config";
 
 class SellerController {
   static GetSellerList: RequestHandler = async (req, res, next) => {
@@ -34,6 +35,12 @@ class SellerController {
         Username: string | undefined;
         Password: string | undefined;
       };
+
+      const sellerUsername = await ConfigFile.GetSellerUsername();
+
+      if (Username?.toLowerCase() === sellerUsername.toLowerCase())
+        throw new Error("Username already Exist!");
+
       const seller = new Seller({
         Title: Title,
         Username: Username,
@@ -46,6 +53,7 @@ class SellerController {
       next(error);
     }
   };
+
   static EditSeller: RequestHandler = async (req, res, next) => {
     try {
       const id: string = req.params.id;
@@ -77,6 +85,7 @@ class SellerController {
       next(error);
     }
   };
+
   static RemoveSeller: RequestHandler = async (req, res, next) => {
     try {
       const id: string = req.params.id;
