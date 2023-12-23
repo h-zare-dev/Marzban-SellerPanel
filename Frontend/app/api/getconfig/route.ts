@@ -5,11 +5,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const jsonDirectory = path.join(process.cwd(), "data");
-    const fileContents = await fs.readFile(
-      jsonDirectory + "/config.json",
-      "utf8"
-    );
+    const filepath = path.join(process.cwd(), "data", "config.json");
+    const fileContents = await fs.readFile(filepath, "utf8");
     return new Response(fileContents);
   } catch (Error) {
     return new Response(null);
