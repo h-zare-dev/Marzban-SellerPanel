@@ -1,26 +1,23 @@
 # Stage 1: install dependencies
 FROM node:slim AS deps
+
 WORKDIR /app
-COPY package*.json .
+
+COPY . .
 
 ARG NODE_ENV
 ENV NODE_ENV $NODE_ENV
 
 RUN npm install
 
-# Stage 2: build
-FROM node:slim AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
 RUN npm run build
 
-# Stage 3: run
+# Stage 2: run
 FROM node:slim
 WORKDIR /frontend
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./
+COPY --from=deps /app/.next ./.next
+COPY --from=deps /app/public ./public
+COPY --from=deps /app/package.json ./
 
 RUN npm install --production
 
