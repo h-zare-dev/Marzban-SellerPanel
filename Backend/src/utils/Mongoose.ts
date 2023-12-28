@@ -3,6 +3,7 @@ import Account, { AccountSchema } from "../models/Account";
 import Seller, { SellerSchema } from "../models/Seller";
 import Tariff, { TariffSchema } from "../models/Tariff";
 import { WholeSalerSchema } from "../models/WholeSaler";
+import ConfigFile from "./Config";
 
 class Mongoose {
   static ConnectionString =
@@ -50,7 +51,10 @@ class Mongoose {
     return false;
   }
 
-  static async CheckLicense(marzbanUrl: string, sn: string) {
+  static async CheckLicense() {
+    const marzbanUrl = await ConfigFile.GetMarzbanURL();
+    const sn = await ConfigFile.GetSerialKey();
+
     const connection = await this.ConnectToDatabase(
       this.GetDbPanelConnectionString()
     );
@@ -63,7 +67,7 @@ class Mongoose {
         SN: sn,
       });
 
-      if (wholeSaler) {
+      if (wholeSaler && wholeSaler.ExpireDate >= new Date()) {
         this.SetDbWholeSalerConnectionString(
           wholeSaler.Cluster,
           wholeSaler.Database,

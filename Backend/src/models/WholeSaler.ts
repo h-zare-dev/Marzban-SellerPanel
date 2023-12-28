@@ -11,6 +11,8 @@ export const WholeSalerSchema = new mongoose.Schema({
 
   SN: { type: String, index: true, required: [true, "SN is required"] },
 
+  ExpireDate: { type: Date, required: [true, "ExpireDate is required"] },
+
   Cluster: { type: String, required: [true, "Cluster is required"] },
 
   Database: { type: String, required: [true, "Database is required"] },

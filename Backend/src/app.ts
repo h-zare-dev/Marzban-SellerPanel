@@ -61,10 +61,7 @@ app.get("/", (req: Request, res: Response) => {
 
 const Connecting = async () => {
   try {
-    const marzbanUrl = await ConfigFile.GetMarzbanURL();
-    const sn = await ConfigFile.GetSerialKey();
-
-    const isValidLicense = await Mongoose.CheckLicense(marzbanUrl, sn);
+    const isValidLicense = await Mongoose.CheckLicense();
 
     // await Mongoose.AddWholeSaler();
     // console.log("GenerateWholeSaler...");
@@ -75,9 +72,7 @@ const Connecting = async () => {
       httpsServer.listen(8443);
       console.log("Server is Startig at http://localhost:8080");
       console.log("Server is Startig at https://localhost:8443");
-    } else {
-      console.log("License is not Available or Expired!");
-    }
+    } else console.log("License is not Available or Expired!");
   } catch (err) {
     console.log(`MongoDb Connection :  ${err}`);
   }

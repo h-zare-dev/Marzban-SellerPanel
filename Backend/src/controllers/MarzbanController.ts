@@ -8,6 +8,7 @@ import Account from "../models/Account";
 import Seller from "../models/Seller";
 import Tariff from "../models/Tariff";
 import ConfigFile from "../utils/Config";
+import Mongoose from "../utils/Mongoose";
 
 interface MarzbanAccount {
   username: string;
@@ -53,8 +54,6 @@ class MarzbanController {
       );
 
       console.log("End Login to Marzban ", new Date().toLocaleTimeString());
-
-      const IsValidUser = false;
 
       if (username.toLowerCase() == sellerUsername.toLowerCase()) {
         if (password !== sellerPassword) {
@@ -176,6 +175,11 @@ class MarzbanController {
 
   static AddAccount: RequestHandler = async (req, res, next) => {
     try {
+      const isValidLicense = await Mongoose.CheckLicense();
+
+      if (!isValidLicense)
+        throw new Error("License is not Available or Expired!");
+
       const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/user";
 
       const { username, tariffId } = req.body as {
