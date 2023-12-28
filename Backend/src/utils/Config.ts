@@ -6,6 +6,7 @@ interface ConfigType {
   SUBSCRIPTION_URL: string;
   NOSUDO_MARZBAN_USERNAME: string;
   NOSUDO_MARZBAN_PASSWORD: string;
+  MARZBAN_FLOW: string;
   SELLER_ADMIN_USERNAME: string;
   SELLER_ADMIN_PASSWORD: string;
   SERIALKEY: string;
@@ -55,7 +56,16 @@ class ConfigFile {
     throw new Error("NOSUDO_MARZBAN_PASSWORD doesn't exist in config File!");
   }
 
-  static async GetSellerUsername() {
+  static async GetMarzbanFlow() {
+    if (!this.config) await this.GetConfigFromFile();
+
+    if (this.config && this.config.MARZBAN_FLOW)
+      return this.config.MARZBAN_FLOW;
+
+    throw new Error("MARZBAN_FLOW doesn't exist in config File!");
+  }
+
+  static async GetSellerAdminUsername() {
     if (!this.config) await this.GetConfigFromFile();
 
     if (this.config && this.config.SELLER_ADMIN_USERNAME)
@@ -64,7 +74,7 @@ class ConfigFile {
     throw new Error("SELLER_ADMIN_USERNAME doesn't exist in config File!");
   }
 
-  static async GetSellerPassword() {
+  static async GetSellerAdminPassword() {
     if (!this.config) await this.GetConfigFromFile();
 
     if (this.config && this.config.SELLER_ADMIN_PASSWORD)

@@ -36,7 +36,7 @@ class SellerController {
         Password: string | undefined;
       };
 
-      const sellerUsername = await ConfigFile.GetSellerUsername();
+      const sellerUsername = await ConfigFile.GetSellerAdminUsername();
 
       if (Username?.toLowerCase() === sellerUsername.toLowerCase())
         throw new Error("Username already Exist!");

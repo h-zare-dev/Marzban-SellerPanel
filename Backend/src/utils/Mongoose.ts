@@ -42,13 +42,11 @@ class Mongoose {
 
   static async ConnectDbWholeSaler() {
     if (this.GetDbWholeSalerConnectionString() == "")
-      console.log("DbWholeSaler connection String Not Found");
-    else {
-      mongoose.set("strictQuery", true);
-      await mongoose.connect(this.GetDbWholeSalerConnectionString());
-      return true;
-    }
-    return false;
+      throw new Error("DbWholeSaler connection String Not Found");
+
+    mongoose.set("strictQuery", true);
+    await mongoose.connect(this.GetDbWholeSalerConnectionString());
+    return true;
   }
 
   static async CheckLicense() {
@@ -131,8 +129,9 @@ class Mongoose {
 
   static async ConnectToDatabase(connectionString: string) {
     if (!connectionString && connectionString == "")
-      console.log("MongoDb connection String Not Found");
-    else return await mongoose.createConnection(connectionString);
+      throw new Error("MongoDb connection String Not Found");
+
+    return await mongoose.createConnection(connectionString);
   }
 
   static async CopyDatabase(destinatioConnectionString: string) {
