@@ -66,8 +66,11 @@ const Connecting = async () => {
 
     const isValidLicense = await Mongoose.CheckLicense(marzbanUrl, sn);
 
+    // await Mongoose.AddWholeSaler();
+    // console.log("GenerateWholeSaler...");
+    // return;
+
     if (isValidLicense && (await Mongoose.ConnectDbWholeSaler())) {
-      // await Mongoose.AddWholeSaler();
       httpServer.listen(8080);
       httpsServer.listen(8443);
       console.log("Server is Startig at http://localhost:8080");

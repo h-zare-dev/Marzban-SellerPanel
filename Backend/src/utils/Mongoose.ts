@@ -85,15 +85,43 @@ class Mongoose {
       const WholeSaler = connection.model("WholeSaler", WholeSalerSchema);
 
       const wholeSaler = new WholeSaler();
-      wholeSaler.Owner = "@fairinternet_admin";
+      wholeSaler.Owner = "@whoer";
       wholeSaler.MarzbanUrl = "https://main.fairinternet.cloud:2053";
-      wholeSaler.SN = "gatrupe2lke-";
+      wholeSaler.SN = "flch3m55ucr$";
       wholeSaler.Cluster = "marzbanseller01.xrbygjz";
-      wholeSaler.Database = "FairInternet";
+      wholeSaler.Database = "iipsabet";
       wholeSaler.DbUsername = "marzbansellerpanel";
       wholeSaler.DbPassword = "ZioVwUWNWcBb2LG6";
 
       wholeSaler.save();
+
+      this.SetDbWholeSalerConnectionString(
+        wholeSaler.Cluster,
+        wholeSaler.Database,
+        wholeSaler.DbUsername,
+        wholeSaler.DbPassword
+      );
+
+      if (await this.ConnectDbWholeSaler()) {
+        const tariff = new Tariff();
+        tariff.Title = "50GB 1Month";
+        tariff.DataLimit = 50;
+        tariff.Duration = 30;
+        tariff.IsFree = false;
+        tariff.IsVisible = true;
+
+        tariff.save();
+
+        const seller = new Seller();
+        seller.Title = "MobileMeli";
+        seller.Counter = 0;
+        seller.Limit = 500;
+        seller.Status = "Active";
+        seller.Username = "meli";
+        seller.Password = "123456789mm@";
+
+        seller.save();
+      }
     }
   }
 
