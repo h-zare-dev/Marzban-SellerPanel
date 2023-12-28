@@ -57,9 +57,9 @@ const AccountGrid = (props: PropsType) => {
   const columns = [
     {
       headerName: "",
-      field: "subscription_url",
+      field: "link",
       type: "actions",
-      width: 180,
+      width: 70,
       getActions: (params: { row: AccountType }) => [
         <GridActionsCellItem
           key="link"
@@ -73,39 +73,17 @@ const AccountGrid = (props: PropsType) => {
           }
           onClick={() => onCopyLink(params.row)}
         />,
-        <GridActionsCellItem
-          key="delete"
-          label="Delete"
-          icon={<DeleteIcon className="text-danger" />}
-          onClick={() => onDeleteClick(params.row)}
-        />,
+
         <GridActionsCellItem
           key="renew"
           label="Renew"
           icon={<RenewIcon className="text-success" />}
           onClick={() => onRenewClick(params.row)}
         />,
-        <GridActionsCellItem
-          key="disable"
-          label="disable"
-          icon={
-            params.row.status === "disabled" ? (
-              <ToggleOffIcon
-                className="text-secondry "
-                sx={{ fontSize: "35px" }}
-              />
-            ) : (
-              <ToggleOnIcon
-                sx={{ fontSize: "35px" }}
-                className="text-success "
-              />
-            )
-          }
-          onClick={() => onDisableAccount(params.row)}
-        />,
       ],
     },
     { field: "username", headerName: "Username", width: 140 },
+    { field: "note", headerName: "Note", width: 80 },
     {
       field: "online",
       headerName: "",
@@ -147,6 +125,38 @@ const AccountGrid = (props: PropsType) => {
       width: 110,
       renderCell: (params: GridRenderCellParams<any, string>) =>
         RenderPayment(params.value),
+    },
+    {
+      headerName: "",
+      field: "delete",
+      type: "actions",
+      width: 80,
+      getActions: (params: { row: AccountType }) => [
+        <GridActionsCellItem
+          key="delete"
+          label="Delete"
+          icon={<DeleteIcon className="text-danger" />}
+          onClick={() => onDeleteClick(params.row)}
+        />,
+        <GridActionsCellItem
+          key="disable"
+          label="disable"
+          icon={
+            params.row.status === "disabled" ? (
+              <ToggleOffIcon
+                className="text-secondry "
+                sx={{ fontSize: "35px" }}
+              />
+            ) : (
+              <ToggleOnIcon
+                sx={{ fontSize: "35px" }}
+                className="text-success "
+              />
+            )
+          }
+          onClick={() => onDisableAccount(params.row)}
+        />,
+      ],
     },
   ];
 
