@@ -20,6 +20,7 @@ interface MarzbanAccount {
   online_at: string;
   sub_updated_at: string;
   sub_last_user_agent: string;
+  note: string;
 }
 
 class MarzbanController {
@@ -39,10 +40,10 @@ class MarzbanController {
       username = username.trim();
       password = password.trim();
 
-      const sellerUsername = await ConfigFile.GetSellerUsername();
-      const sellerPassword = await ConfigFile.GetSellerPassword();
+      const sellerUsername = await ConfigFile.GetSellerAdminUsername();
+      const sellerPassword = await ConfigFile.GetSellerAdminPassword();
 
-      console.log("Start Login to Marzban ", new Date().toLocaleTimeString());
+      //console.log("Start Login to Marzban ", new Date().toLocaleTimeString());
 
       const resultLogin = await axios.post(
         apiURL,
@@ -53,8 +54,9 @@ class MarzbanController {
         config
       );
 
-      console.log("End Login to Marzban ", new Date().toLocaleTimeString());
+      //console.log("End Login to Marzban ", new Date().toLocaleTimeString());
 
+      //Login Admin Seller Panel
       if (username.toLowerCase() == sellerUsername.toLowerCase()) {
         if (password !== sellerPassword) {
           res.status(500).json({ Message: "Invalid Account Information" });
@@ -68,6 +70,7 @@ class MarzbanController {
         });
         return;
       }
+      //Login Seller
       const seller = await Seller.findOne({
         Username: username,
         Password: password,
@@ -92,23 +95,15 @@ class MarzbanController {
 
   static GetAccounts: RequestHandler = async (req, res, next) => {
     try {
-      let resultMarzban: AxiosResponse;
-
-      console.log(
-        "Start Getting From Marzban ## " + req.params.seller,
-        new Date().toLocaleTimeString()
-      );
-      resultMarzban = await this.GetMarzbanAccounts(
+      // console.log("Start Getting From Marzban ## " + req.params.seller);
+      const resultMarzban = await this.GetMarzbanAccounts(
         req.headers.authorization,
         req.params.seller,
         +req.params.offset,
         +req.params.limit
       );
 
-      console.log(
-        "End Getting From Marzban -- " + resultMarzban.data.users.length,
-        new Date().toLocaleTimeString()
-      );
+      // console.log("End Getting From Marzban -- " + resultMarzban.data.users.length);
 
       const isAll = req.params.isall === "true";
 
@@ -156,6 +151,7 @@ class MarzbanController {
           ),
           sub_last_user_agent: marzbanAccount.sub_last_user_agent,
           payed: item.Payed ? "Paid" : "Unpaid",
+          note: marzbanAccount.note,
         };
       });
 
@@ -163,10 +159,7 @@ class MarzbanController {
         .filter((acc) => acc.data_limit)
         .reverse();
 
-      console.log(
-        `End Getting All for ${req.params.seller}------------------------------------------------------------------`,
-        new Date().toLocaleTimeString()
-      );
+      // console.log(`End Getting All for ${req.params.seller}`);
       res.status(200).json(filteredAccounts);
     } catch (error) {
       next(error);
@@ -187,12 +180,12 @@ class MarzbanController {
         tariffId: string;
       };
 
-      if (tariffId && tariffId === "") {
+      if (!tariffId && tariffId === "") {
         res.status(404).json("TariffId not Found");
         return;
       }
 
-      if (username && username === "") {
+      if (!username && username === "") {
         res.status(404).json("Username not Found");
         return;
       }
@@ -223,7 +216,7 @@ class MarzbanController {
       const currentDate = new Date();
 
       currentDate.setDate(currentDate.getDate() + (tariff.Duration ?? 0));
-      currentDate.setHours(23, 59, 59);
+      currentDate.setHours(20, 30, 0);
 
       const expireTimestamp = Math.floor(currentDate.getTime() / 1000);
 
@@ -253,7 +246,7 @@ class MarzbanController {
           ...proxies,
           vless: {
             id: vlessUUID,
-            flow: "xtls-rprx-vision",
+            flow: await ConfigFile.GetMarzbanFlow(),
           },
         };
         inbounds = { ...inbounds, vless: getInbound.vless };
@@ -309,7 +302,7 @@ class MarzbanController {
         status: string;
       };
 
-      if (req.params.username && req.params.username === "") {
+      if (!req.params.username && req.params.username === "") {
         res.status(404).json("Username not Found");
         return;
       }
@@ -345,7 +338,7 @@ class MarzbanController {
         status: string;
       };
 
-      if (req.params.username && req.params.username === "") {
+      if (!req.params.username && req.params.username === "") {
         res.status(404).json("Username not Found");
         return;
       }
@@ -373,12 +366,12 @@ class MarzbanController {
         username: string;
       };
 
-      if (username && username === "") {
+      if (!username && username === "") {
         res.status(404).json("Username not Found");
         return;
       }
 
-      if (tariffId && tariffId === "") {
+      if (!tariffId && tariffId === "") {
         res.status(404).json("TariffId not Found");
         return;
       }
@@ -402,7 +395,7 @@ class MarzbanController {
       const currentDate = new Date();
 
       currentDate.setDate(currentDate.getDate() + (tariff.Duration ?? 0));
-      currentDate.setHours(23, 59, 59);
+      currentDate.setHours(20, 30, 0);
 
       const expireTimestamp = Math.floor(currentDate.getTime() / 1000);
 
@@ -507,7 +500,7 @@ class MarzbanController {
   ) => {
     const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/users";
 
-    const sellerUsername = await ConfigFile.GetSellerUsername();
+    const sellerUsername = await ConfigFile.GetSellerAdminUsername();
 
     const params = {
       username:
@@ -525,12 +518,9 @@ class MarzbanController {
   };
 
   static GetSellerAccounts = async (sellerTitle: string, IsAll: boolean) => {
-    console.log(
-      "Start Getting From MongoDB ## " + sellerTitle,
-      new Date().toLocaleTimeString()
-    );
+    // console.log("Start Getting From MongoDB ## " + sellerTitle);
 
-    const sellerUsername = await ConfigFile.GetSellerUsername();
+    const sellerUsername = await ConfigFile.GetSellerAdminUsername();
 
     const seller = await Seller.findOne({ Title: sellerTitle });
 
@@ -543,20 +533,14 @@ class MarzbanController {
 
     const accounts = await Account.find(condition);
 
-    console.log(
-      "End Getting From MongoDB -- Count : " + accounts.length,
-      new Date().toLocaleTimeString()
-    );
+    // console.log("End Getting From MongoDB -- Count : " + accounts.length);
     return accounts;
   };
 
   static GetTotalUnpaid = async (seller: any): Promise<number> => {
     let totalUnpaid = 0;
 
-    console.log(
-      "Start Calculate totalUnpaid ## " + seller.Title,
-      new Date().toLocaleTimeString()
-    );
+    // console.log("Start Calculate totalUnpaid ## " + seller.Title);
     const accounts = await Account.find({
       Seller: seller,
       Payed: false,
@@ -571,10 +555,7 @@ class MarzbanController {
       if (tariff) totalUnpaid += tariff.DataLimit ?? 0;
     });
 
-    console.log(
-      "End Calculate totalUnpaid -- " + totalUnpaid,
-      new Date().toLocaleTimeString()
-    );
+    // console.log("End Calculate totalUnpaid -- " + totalUnpaid);
     return totalUnpaid;
   };
 }
