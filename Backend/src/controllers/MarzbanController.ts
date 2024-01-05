@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
@@ -74,6 +74,7 @@ class MarzbanController {
       const seller = await Seller.findOne({
         Username: username,
         Password: password,
+        Status: "Active",
       });
 
       if (seller) {
@@ -175,8 +176,9 @@ class MarzbanController {
 
       const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/user";
 
-      const { username, tariffId } = req.body as {
+      const { username, note, tariffId } = req.body as {
         username: string;
+        note: string;
         tariffId: string;
       };
 
@@ -266,6 +268,7 @@ class MarzbanController {
         apiURL,
         {
           username: generateUsername,
+          note: note,
           proxies: proxies,
           inbounds: inbounds,
           expire: expireTimestamp,
@@ -448,7 +451,7 @@ class MarzbanController {
         const used_traffic =
           (resultget.data.used_traffic ?? 0) / (1024 * 1024 * 1024);
 
-        if (used_traffic < 1.2) {
+        if (used_traffic < (await ConfigFile.GetIgnoreTrafficToRemove())) {
           await axios.delete(apiURL, {
             headers: { Authorization: req.headers.authorization },
           });
@@ -557,6 +560,21 @@ class MarzbanController {
 
     // console.log("End Calculate totalUnpaid -- " + totalUnpaid);
     return totalUnpaid;
+  };
+
+  static CheckToken = async (authorization?: string) => {
+    try {
+      const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/admin";
+
+      const config = {
+        headers: { Authorization: authorization },
+        params: {},
+      };
+
+      const resultMarzban = await axios.get(apiURL, config);
+
+      return resultMarzban.status === 200;
+    } catch (err: any) {}
   };
 }
 

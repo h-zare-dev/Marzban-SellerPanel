@@ -9,6 +9,7 @@ interface ConfigType {
   MARZBAN_FLOW: string;
   SELLER_ADMIN_USERNAME: string;
   SELLER_ADMIN_PASSWORD: string;
+  IGNORE_TRAFFIC_TO_REMOVE: string;
   SERIALKEY: string;
 }
 
@@ -81,6 +82,15 @@ class ConfigFile {
       return this.config.SELLER_ADMIN_PASSWORD;
 
     throw new Error("SELLER_ADMIN_PASSWORD doesn't exist in config File!");
+  }
+
+  static async GetIgnoreTrafficToRemove() {
+    if (!this.config) await this.GetConfigFromFile();
+
+    if (this.config && this.config.IGNORE_TRAFFIC_TO_REMOVE)
+      return +this.config.IGNORE_TRAFFIC_TO_REMOVE;
+
+    throw new Error("IGNORE_TRAFFIC_TO_REMOVE doesn't exist in config File!");
   }
 
   static async GetSerialKey() {
