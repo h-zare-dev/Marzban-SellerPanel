@@ -226,7 +226,9 @@ a {
 .w30vw {
   width: 32vw;
 }
-
+.w45vw {
+  width: 32vw;
+}
 .w80Per {
   width: 80%;
 }
@@ -470,7 +472,28 @@ a {
   border-color: rgb(224, 136, 21);
   color: rgb(187, 84, 0);
 }
-
+.MUIGridHeader{
+  background-color: #66366f;
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+}
+.MUIGridHeader:hover{
+  background-color: #ebdaf6;
+  color: black;
+  font-size: 0.9rem;
+}
+.ActiveComponentName{
+  color: purple;
+  font-weight: 500;
+  padding-top: 1rem;
+  text-align: end;
+  vertical-align: middle;
+  padding-right: 2px;
+}
+.ActiveComponentNameRow{
+ background: linear-gradient(rgba(253, 183, 54, 0.471),rgb(246, 241, 215));
+}
 @media screen and (min-width: 768px) {
   #divHeader .flex-container {
     display: flex;
@@ -487,40 +510,51 @@ a {
 }
 #divProfile {
   height: 300px;
-  background-color: red;
+  
 }
-@media screen and (max-width: 765px) {
+@media screen and (max-width: 577px) {
   #divDrop .tariffDrop {
     width: 100%;
   }
-  #divButton {
+  .divButton {
+    display: flex;
     justify-content: center;
+    height:100%;
+  }
+  .btnAdd{
+    width: 100%;
+  }
+}
+@media screen and (min-width: 577px) and (max-width:768px) {
+  #divDrop .tariffDrop {
+    width: 100%;
+  }
+  .divButton {
+    display: flex;
+    justify-content: center;
+    height:100%;
+    align-items: center;
+  }
+  .btnAdd{
+    width: 100px;
+  }
+}
+@media screen and (min-width: 768px) {
+    .divButton {
+    display: flex;
+    justify-content: start;
+    height:100%;
+  }
+  .btnAdd{
+    width: 100px;
   }
 }
 .linking {
   background-color: red;
   color: red;
 }
-@media screen and (max-width: 765px) {
-  #divButton {
-    justify-content: left;
-  }
-}
-@media screen and (max-width: 609px) {
-  #divButton {
-    justify-content: left;
-  }
-}
-@media screen and (max-width: 576px) {
-  #divButton {
-    width: 100%;
-    justify-content: center;
-  }
 
-  #divButton .btnAdd {
-    width: 100%;
-  }
-}
+
 @media screen and (max-width: 768px) {
   #divHeader .flex-container {
     display: flex;
@@ -1265,3 +1299,44 @@ a {
     width: 100%;
   }
 }
+
+@media (min-width:1000px) {
+  .moduleContainer  {
+    width: 35%;
+  }}
+@media (min-width: 850px) and (max-width:1000px){
+  .moduleContainer  {
+    width: 35%;
+  }}
+@media (min-width: 600px) and ( max-width:850px) {
+  .moduleContainer  {
+    width: 70%;
+  }}
+  @media (min-width: 400px) and (max-width:600px) {
+    .moduleContainer  {
+      width: 95%;
+          
+    }}
+    @media (max-width: 400px) {
+      .moduleContainer  {
+        width: 100%;
+      }}
+.moduleContainerStyle{ border: solid 2px purple;}
+
+@media (min-width:800px) {
+  .GridSellerContainer  {
+    width: 780px;
+  }}
+@media (min-width: 300px) and (max-width:800px){
+  .GridSellerContainer  {
+    width: 100%;
+  }}
+  @media (min-width:1000px) {
+    .GridTariffContainer  {
+      width: 1000px;
+    }}
+  @media (min-width: 300px) and (max-width:1000px){
+    .GridTariffContainer  {
+      width: 100%;
+    }}
+
