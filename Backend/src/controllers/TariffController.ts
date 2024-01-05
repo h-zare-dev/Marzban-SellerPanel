@@ -1,10 +1,13 @@
 import { RequestHandler } from "express";
 import Tariff from "../models/Tariff";
+import { Types } from "mongoose";
 
 class TariffController {
   static GetTariffList: RequestHandler = async (req, res, next) => {
     try {
-      const result = await Tariff.find({ IsVisible: true });
+      let condition = {};
+      if (req.params.isall === "false") condition = { IsVisible: true };
+      const result = await Tariff.find(condition);
       res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -21,15 +24,19 @@ class TariffController {
 
   static AddTariff: RequestHandler = async (req, res, next) => {
     try {
-      const { Title, DataLimit, Duration } = req.body as {
+      const { Title, DataLimit, Duration, IsFree, IsVisible } = req.body as {
         Title: string | undefined;
         DataLimit: number | undefined;
         Duration: number | undefined;
+        IsFree: boolean | undefined;
+        IsVisible: boolean | undefined;
       };
       const tariff = new Tariff({
         Title: Title,
         DataLimit: DataLimit,
         Duration: Duration,
+        IsFree: IsFree,
+        IsVisible: IsVisible,
       });
 
       const result = await tariff.save();
@@ -50,6 +57,23 @@ class TariffController {
   static RemoveTariff: RequestHandler = (req, res, next) => {
     try {
       res.status(200).json({ result: "" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static DisableTariff: RequestHandler = async (req, res, next) => {
+    try {
+      const _id = new Types.ObjectId(req.params.id);
+
+      const tariff = await Tariff.findOne({ _id: _id });
+
+      if (tariff) {
+        tariff.IsVisible = !tariff.IsVisible;
+        await tariff.save();
+
+        res.status(200).json({ result: "Tariff Disabled!" });
+      }
     } catch (error) {
       next(error);
     }

@@ -3,12 +3,17 @@ import { Types } from "mongoose";
 
 import Seller from "../models/Seller";
 import ConfigFile from "../utils/Config";
+import MarzbanController from "./MarzbanController";
 
 class SellerController {
   static GetSellerList: RequestHandler = async (req, res, next) => {
     try {
-      const result = await Seller.find();
-      res.status(200).json(result);
+      if (await MarzbanController.CheckToken(req.headers.authorization)) {
+        const result = await Seller.find();
+        res.status(200).json(result);
+        return;
+      }
+      res.status(404).json("Invalid Token");
     } catch (error) {
       next(error);
     }
@@ -30,8 +35,9 @@ class SellerController {
 
   static AddSeller: RequestHandler = async (req, res, next) => {
     try {
-      const { Title, Username, Password } = req.body as {
+      const { Title, Limit, Username, Password } = req.body as {
         Title: string | undefined;
+        Limit: string;
         Username: string | undefined;
         Password: string | undefined;
       };
@@ -41,13 +47,33 @@ class SellerController {
       if (Username?.toLowerCase() === sellerUsername.toLowerCase())
         throw new Error("Username already Exist!");
 
+      if (!(await MarzbanController.CheckToken(req.headers.authorization)))
+        throw new Error("Invalid Token");
+
+      const sellers = await Seller.find();
+
+      const find = sellers.find((seller: any) =>
+        Title?.toLowerCase().includes(seller.Title.toLowerCase())
+      );
+
+      console.log(find);
+
+      if (find) {
+        throw new Error("Title Is Exists!");
+      }
+
       const seller = new Seller({
         Title: Title,
+        Limit: +Limit,
         Username: Username,
         Password: Password,
       });
 
       const result = await seller.save();
+
+      if (result.Title !== seller.Title)
+        throw new Error("Username already Exist!");
+
       res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -58,11 +84,26 @@ class SellerController {
     try {
       const id: string = req.params.id;
 
+      if (!(await MarzbanController.CheckToken(req.headers.authorization)))
+        throw new Error("Invalid Token");
+
       const { Title, Username, Password } = req.body as {
         Title: string | undefined;
         Username: string | undefined;
         Password: string | undefined;
       };
+
+      const sellers = await Seller.find();
+
+      const find = sellers.find((seller: any) =>
+        Title?.toLowerCase().includes(seller.Title.toLowerCase())
+      );
+
+      console.log(find);
+
+      if (find) {
+        throw new Error("Title Is Exists!");
+      }
       const seller = new Seller({
         Title: Title,
         Username: Username,
@@ -89,6 +130,9 @@ class SellerController {
   static RemoveSeller: RequestHandler = async (req, res, next) => {
     try {
       const id: string = req.params.id;
+
+      if (!(await MarzbanController.CheckToken(req.headers.authorization)))
+        throw new Error("Invalid Token");
 
       const result = await Seller.deleteOne({ _id: new Types.ObjectId(id) });
 

@@ -87,11 +87,12 @@ class Mongoose {
       const WholeSaler = connection.model("WholeSaler", WholeSalerSchema);
 
       const wholeSaler = new WholeSaler();
-      wholeSaler.Owner = "@whoer";
+      wholeSaler.Owner = "@saradara2";
       wholeSaler.MarzbanUrl = "https://main.fairinternet.cloud:2053";
-      wholeSaler.SN = "flch3m55ucr$";
+      wholeSaler.SN = "c9ovlsln#dru";
+      wholeSaler.ExpireDate = new Date("2024-01-31");
       wholeSaler.Cluster = "marzbanseller01.xrbygjz";
-      wholeSaler.Database = "iipsabet";
+      wholeSaler.Database = "SajjadFathi";
       wholeSaler.DbUsername = "marzbansellerpanel";
       wholeSaler.DbPassword = "ZioVwUWNWcBb2LG6";
 
