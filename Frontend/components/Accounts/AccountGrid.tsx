@@ -1,6 +1,5 @@
 "use client";
-import axios from "axios";
-import { forwardRef, useEffect, useCallback, useState } from "react";
+import { ElementRef, useRef, useState } from "react";
 
 import {
   DataGrid,
@@ -22,44 +21,33 @@ import SafetyCheckRoundedIcon from "@mui/icons-material/SafetyCheckRounded";
 import CircleIcon from "@mui/icons-material/Circle";
 import ToggleOnIcon from "@mui/icons-material/ToggleOn";
 import ToggleOffIcon from "@mui/icons-material/ToggleOff";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
 
-import { useMyContext } from "@/context/MyContext";
+import AccountType from "@/models/AccountType";
 import { copyTextToClipboard } from "@/utils/Helper";
-
-interface AccountType {
-  show: string;
-  username: string;
-  package: string;
-  subscription_url: string;
-  online: string;
-  online_at: string;
-  payed: string;
-  data_limit: number;
-  data_limit_string: string;
-  used_traffic: number;
-  used_traffic_string: string;
-  expire: number;
-  expire_string: string;
-  status: string;
-}
+import QRModal from "./QRModal";
 
 interface PropsType {
   Loading: boolean;
-  Rows: AccountType[];
-  onDeleting: (row: AccountType) => void;
-  onRenewing: (row: AccountType) => void;
-  onDisabling: (row: AccountType) => void;
+  Accounts: AccountType[];
+  onDeleting: (account: AccountType) => void;
+  onRenewing: (account: AccountType) => void;
+  onDisabling: (account: AccountType) => void;
 }
 
 const AccountGrid = (props: PropsType) => {
   const [selectedLink, setSelectedLink] = useState("");
 
+  type QRModalHandle = ElementRef<typeof QRModal>;
+  const refQRModal = useRef<QRModalHandle>(null);
+
   const columns = [
     {
+      headerClassName: "MUIGridHeader",
       headerName: "",
       field: "link",
       type: "actions",
-      width: 70,
+      width: 120,
       getActions: (params: { row: AccountType }) => [
         <GridActionsCellItem
           key="link"
@@ -73,7 +61,12 @@ const AccountGrid = (props: PropsType) => {
           }
           onClick={() => onCopyLink(params.row)}
         />,
-
+        <GridActionsCellItem
+          key="qr"
+          label="QR"
+          icon={<QrCode2Icon className="text-primary" />}
+          onClick={() => onQRClick(params.row)}
+        />,
         <GridActionsCellItem
           key="renew"
           label="Renew"
@@ -82,42 +75,77 @@ const AccountGrid = (props: PropsType) => {
         />,
       ],
     },
-    { field: "username", headerName: "Username", width: 140 },
-    { field: "note", headerName: "Note", width: 80 },
+    {
+      field: "username",
+      headerName: "Username",
+      width: 140,
+      headerClassName: "MUIGridHeader",
+    },
+    {
+      field: "note",
+      headerName: "Note",
+      width: 80,
+      headerClassName: "MUIGridHeader",
+    },
     {
       field: "online",
       headerName: "",
       width: 20,
       renderCell: (params: GridRenderCellParams<any, string>) =>
         RenderOnline(params.value),
+      headerClassName: "MUIGridHeader",
     },
-    { field: "online_at", headerName: "Online", width: 180 },
-    { field: "package", headerName: "Package", width: 170 },
-    { field: "data_limit_string", headerName: "Limit", width: 110 },
+    {
+      field: "online_at",
+      headerName: "Online",
+      width: 180,
+      headerClassName: "MUIGridHeader",
+    },
+    {
+      field: "package",
+      headerName: "Package",
+      width: 170,
+      headerClassName: "MUIGridHeader",
+    },
+    {
+      field: "data_limit_string",
+      headerName: "Limit",
+      width: 110,
+      headerClassName: "MUIGridHeader",
+    },
     {
       field: "used_traffic_string",
       headerName: "Usage",
       width: 110,
       renderCell: (params: GridRenderCellParams<any, string>) =>
         RenderUsage(params.row),
+      headerClassName: "MUIGridHeader",
     },
-    { field: "expire_string", headerName: "Expire", width: 120 },
+    {
+      field: "expire_string",
+      headerName: "Expire",
+      width: 120,
+      headerClassName: "MUIGridHeader",
+    },
     {
       field: "status",
       headerName: "Status",
       width: 110,
       renderCell: (params: GridRenderCellParams<any, string>) =>
         RenderStatus(params.value),
+      headerClassName: "MUIGridHeader",
     },
     {
       field: "sub_updated_at",
       headerName: "Subscription Last Update",
       width: 180,
+      headerClassName: "MUIGridHeader",
     },
     {
       field: "sub_last_user_agent",
       headerName: "Subscription Last App",
       width: 180,
+      headerClassName: "MUIGridHeader",
     },
     {
       field: "payed",
@@ -125,12 +153,14 @@ const AccountGrid = (props: PropsType) => {
       width: 110,
       renderCell: (params: GridRenderCellParams<any, string>) =>
         RenderPayment(params.value),
+      headerClassName: "MUIGridHeader",
     },
     {
       headerName: "",
       field: "delete",
       type: "actions",
       width: 80,
+      headerClassName: "MUIGridHeader",
       getActions: (params: { row: AccountType }) => [
         <GridActionsCellItem
           key="delete"
@@ -234,46 +264,70 @@ const AccountGrid = (props: PropsType) => {
     }
   };
 
-  const RenderUsage = (row: AccountType) => {
+  const RenderUsage = (account: AccountType) => {
     return (
       <Box sx={{ width: "100%" }}>
-        {row.used_traffic_string}
+        {account.used_traffic_string}
         <LinearProgress
           variant="determinate"
-          value={(row.used_traffic / row.data_limit) * 100}
+          value={(account.used_traffic / account.data_limit) * 100}
         />
       </Box>
     );
   };
 
-  const onCopyLink = (row: AccountType) => {
-    copyTextToClipboard(row.subscription_url);
-    setSelectedLink(row.username);
+  const onCopyLink = (account: AccountType) => {
+    copyTextToClipboard(account.subscription_url);
+    setSelectedLink(account.username);
   };
 
-  const onRenewClick = (row: AccountType) => {
-    props.onRenewing(row);
+  const onRenewClick = (account: AccountType) => {
+    props.onRenewing(account);
   };
 
-  const onDeleteClick = (row: AccountType) => {
-    props.onDeleting(row);
+  const onQRClick = (account: AccountType) => {
+    refQRModal.current?.Show(account.subscription_url, account.username);
   };
 
-  const onDisableAccount = async (row: AccountType) => {
-    props.onDisabling(row);
+  const onDeleteClick = (account: AccountType) => {
+    props.onDeleting(account);
+  };
+
+  const onDisableAccount = async (account: AccountType) => {
+    props.onDisabling(account);
   };
 
   return (
-    <DataGrid
-      initialState={{
-        pagination: { paginationModel: { pageSize: 100 } },
-      }}
-      pageSizeOptions={[10, 25, 50, 100]}
-      className="Grid"
-      rows={props.Rows}
-      columns={columns}
-      loading={props.Loading}
-    />
+    <>
+      <DataGrid
+        initialState={{
+          pagination: { paginationModel: { pageSize: 100 } },
+        }}
+        pageSizeOptions={[10, 25, 50, 100]}
+        className="Grid"
+        rows={props.Accounts}
+        columns={columns}
+        loading={props.Loading}
+        sx={{
+          boxShadow: 2,
+          border: 2,
+          borderColor: "purple",
+          width: "400",
+          "& .MuiDataGrid-:hover": {
+            backgroundColor: "lightgray",
+            color: "purple",
+            fontWeight: "bold",
+          },
+          "& .MuiDataGrid-row": {
+            backgroundColor: "#f5f5f5",
+          },
+          "& .MuiDataGrid-cell": {
+            textAlign: "center",
+          },
+        }}
+      />
+      <QRModal ref={refQRModal}></QRModal>
+    </>
   );
 };
 

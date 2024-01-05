@@ -39,6 +39,7 @@ const RenewModal = forwardRef<ForwardRefHandle, PropsType>((props, ref) => {
       show={username !== ""}
       backdrop="static"
       keyboard={false}
+      onHide={btnCancel_Click}
     >
       <Modal.Header closeButton className=" text-white bg-success">
         <Modal.Title>

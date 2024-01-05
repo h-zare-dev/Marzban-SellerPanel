@@ -1,20 +1,13 @@
 "use client";
 import axios from "axios";
 import { forwardRef, useEffect, useRef, useState } from "react";
+import TextField from "@mui/material/TextField";
 
 import { useMyContext } from "@/context/MyContext";
-
-interface TariffType {
-  _id: string;
-  Title: string;
-  DataLimit: number;
-  Duration: number;
-  IsFree: boolean;
-  IsVisible: boolean;
-}
+import TariffType from "@/models/TariffType";
 
 interface PropsType {
-  onAdding?: (tariff: TariffType) => void;
+  onAdding?: (tariff: TariffType, note: string) => void;
   Mode: string;
 }
 
@@ -22,11 +15,12 @@ const AddAccount = forwardRef<HTMLSelectElement, PropsType>((props, ref) => {
   const { user, config } = useMyContext();
   const [tariffList, setTariffList] = useState<TariffType[]>([]);
   const selectTariff = useRef<HTMLSelectElement | null>(null);
+  const txtNote = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const LaodTariff = async () => {
       try {
-        const url = new URL("api/tariffs", config.BACKEND_URL);
+        const url = new URL("api/tariffs/false", config.BACKEND_URL);
         const resultTariff = await axios.get(url.toString());
         setTariffList(resultTariff.data);
       } catch (error) {
@@ -37,10 +31,18 @@ const AddAccount = forwardRef<HTMLSelectElement, PropsType>((props, ref) => {
   }, [config.BACKEND_URL, user.Token]);
 
   const BtnAdd_Click = async () => {
+    let note = "";
+    if (txtNote.current && txtNote.current.value) {
+      note = txtNote.current.value;
+      txtNote.current.value = "";
+    }
+
     if (selectTariff.current) {
       const tariffId = selectTariff.current?.value;
+
       const tariff = tariffList.filter((t) => t._id == tariffId)[0];
-      if (props.onAdding) props.onAdding(tariff);
+
+      if (props.onAdding) props.onAdding(tariff, note);
     }
   };
 
@@ -56,31 +58,30 @@ const AddAccount = forwardRef<HTMLSelectElement, PropsType>((props, ref) => {
   };
 
   return props.Mode == "Add" ? (
-    <div className="row w-100 ">
-      <div className="col-12">
-        <div className="row">
-          <div
-            className="col-sm-5  justify-content-start d-flex mt-1 mx-1"
-            id="divDrop"
-          >
-            <select
-              name="tariffList"
-              id="tariffList"
-              className="rounded-2 BorderPurple border-2 p-2  tariffDrop w-100"
-              ref={selectTariff}
-            >
-              {FillTariffs()}
-            </select>
-          </div>
-          <div className="col-sm-6  d-flex mt-1 mx-1" id="divButton">
-            <button
-              onClick={BtnAdd_Click}
-              className="btn btnAdd w100px BgGrdColorizePurple text-white border-1 BorderPurple  "
-            >
-              Add
-            </button>
-          </div>
-        </div>
+    <div className="row w-100 py-3 border BorderPurple">
+      <div className="col-sm-12 col-md-6 col-lg-6 col-xl-4 d-inline-flex ">
+        <select
+          name="tariffList"
+          id="tariffList"
+          className="rounded-2  border-1 p-2  tariffDrop w-100 mx-2"
+          ref={selectTariff}
+        >
+          {FillTariffs()}
+        </select>
+        <TextField
+          id="outlined-basic"
+          label="Note"
+          variant="outlined"
+          inputRef={txtNote}
+        />
+      </div>
+      <div className="col-sm-12 col-md-6 col-lg-6 col-xl-4 divButton py-2">
+        <button
+          onClick={BtnAdd_Click}
+          className="btn btnAdd  BgGrdColorizePurple text-white border-1 BorderPurple h-75 "
+        >
+          Add
+        </button>
       </div>
     </div>
   ) : (
@@ -93,11 +94,17 @@ const AddAccount = forwardRef<HTMLSelectElement, PropsType>((props, ref) => {
           <select
             name="tariffList"
             id="tariffList"
-            className="rounded-2 border-dark border-2  p-2  tariffDrop w-100"
+            className="rounded-2 border-secondary border-1  p-2  tariffDrop w-100"
             ref={ref}
           >
             {FillTariffs()}
           </select>
+          <TextField
+            id="outlined-basic"
+            label="Note"
+            variant="outlined"
+            className="mx-1"
+          />
         </div>
       </div>
     </div>
