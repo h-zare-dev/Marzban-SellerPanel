@@ -24,6 +24,8 @@ export default function Dashboard() {
   const router = useRouter();
   const { user, setUser } = useMyContext();
 
+  console.log(user.IsAdmin);
+
   useEffect(() => {
     if (user.Token === "") router.push("/");
   }, [user.Token, router]);
@@ -80,7 +82,7 @@ export default function Dashboard() {
       </div>
       <div className="row">
         <div className="col-12">
-          {user.Username && user.Username == "Admin" && (
+          {user.IsAdmin && (
             <React.Fragment>
               <div className="row ActiveComponentNameRow">
                 <div className="col-12 d-inline-flex">

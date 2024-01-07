@@ -39,7 +39,7 @@ export default function Login() {
         if (resultAccounts.status == 200) {
           setUser({
             Username: resultAccounts.data.Username,
-            IsAdmin: resultAccounts.data.IsAdmin === "true",
+            IsAdmin: resultAccounts.data.IsAdmin,
             Token: resultAccounts.data.Token,
             Limit: resultAccounts.data.Limit,
           });
