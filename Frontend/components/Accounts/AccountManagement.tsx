@@ -32,7 +32,8 @@ export default function AccountManagement() {
   const onRenewClick = (account: AccountType) => {
     if (
       account.payed == "Paid" &&
-      (account.status == "expired" || account.status == "limited")
+      (account.status == "expired" || account.status == "limited") &&
+      account.data_limit <= user.Limit
     ) {
       setSelectedAccount(account);
       refRenewModal.current?.Show(account.username);
