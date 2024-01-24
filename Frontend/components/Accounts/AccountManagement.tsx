@@ -33,7 +33,7 @@ export default function AccountManagement() {
     if (
       account.payed == "Paid" &&
       (account.status == "expired" || account.status == "limited") &&
-      account.data_limit <= user.Limit
+      account.data_limit / (1024 * 1024 * 1024) <= user.Limit
     ) {
       setSelectedAccount(account);
       refRenewModal.current?.Show(account.username);

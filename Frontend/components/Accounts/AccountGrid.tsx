@@ -78,13 +78,13 @@ const AccountGrid = (props: PropsType) => {
     {
       field: "username",
       headerName: "Username",
-      width: 140,
+      width: 150,
       headerClassName: "MUIGridHeader",
     },
     {
       field: "note",
       headerName: "Note",
-      width: 80,
+      width: 120,
       headerClassName: "MUIGridHeader",
     },
     {
@@ -98,7 +98,7 @@ const AccountGrid = (props: PropsType) => {
     {
       field: "online_at",
       headerName: "Online",
-      width: 180,
+      width: 120,
       headerClassName: "MUIGridHeader",
     },
     {
@@ -116,7 +116,7 @@ const AccountGrid = (props: PropsType) => {
     {
       field: "used_traffic_string",
       headerName: "Usage",
-      width: 110,
+      width: 150,
       renderCell: (params: GridRenderCellParams<any, string>) =>
         RenderUsage(params.row),
       headerClassName: "MUIGridHeader",
@@ -137,14 +137,14 @@ const AccountGrid = (props: PropsType) => {
     },
     {
       field: "sub_updated_at",
-      headerName: "Subscription Last Update",
-      width: 180,
+      headerName: "Last Update (Subscription)",
+      width: 110,
       headerClassName: "MUIGridHeader",
     },
     {
       field: "sub_last_user_agent",
-      headerName: "Subscription Last App",
-      width: 180,
+      headerName: "Last App (Subscription)",
+      width: 140,
       headerClassName: "MUIGridHeader",
     },
     {
