@@ -15,7 +15,6 @@ import tariffRouter from "./routes/TariffRouter";
 import accountRouter from "./routes/AccountRouter";
 import Certificate from "./utils/Certificate";
 import Mongoose from "./utils/Mongoose";
-import ConfigFile from "./utils/Config";
 
 const app = express();
 

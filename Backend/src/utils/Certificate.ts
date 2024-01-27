@@ -4,7 +4,8 @@ class Certificate {
   static GetCredential() {
     const privateKey = fs.readFileSync("certs/key.pem");
     const certificate = fs.readFileSync("certs/fullchain.pem");
-    return { key: privateKey, cert: certificate };
+
+    return { key: privateKey, cert: certificate, rejectUnauthorized: false };
   }
 }
 
