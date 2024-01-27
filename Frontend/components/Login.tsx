@@ -30,9 +30,9 @@ export default function Login() {
     setLoading(true);
     try {
       if (config.BACKEND_URL) {
-        const url = new URL("api/marzban/logintomarzban", config.BACKEND_URL);
+        const url = config.BACKEND_URL + "/api/marzban/logintomarzban";
 
-        const resultAccounts = await axios.post(url.toString(), {
+        const resultAccounts = await axios.post(url, {
           username: UsernameText.current?.value,
           password: PasswordText?.current?.value,
         });
