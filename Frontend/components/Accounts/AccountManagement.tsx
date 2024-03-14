@@ -78,6 +78,22 @@ export default function AccountManagement() {
       }
   };
 
+  const onPaymentClick = async (account: AccountType) => {
+    if (user.IsAdmin)
+      try {
+        StartLoading();
+
+        let url = new URL("api/payaccount/" + account.id, config.BACKEND_URL);
+        await axios.post(url.toString(), {
+          headers: { Authorization: "Bearer " + user.Token },
+        });
+      } catch (error) {
+        console.log(error);
+      } finally {
+        LoadAccount();
+      }
+  };
+
   const OnAddClick = async (tariff: TariffType, note: string) => {
     if (user.Limit >= tariff.DataLimit)
       try {
@@ -218,6 +234,7 @@ export default function AccountManagement() {
               onDeleting={onDeleteClick}
               onDisabling={onDisabledClick}
               onRenewing={onRenewClick}
+              onPaying={onPaymentClick}
             />
           </div>
         </div>

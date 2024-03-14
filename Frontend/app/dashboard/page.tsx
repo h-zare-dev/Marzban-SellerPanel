@@ -24,8 +24,6 @@ export default function Dashboard() {
   const router = useRouter();
   const { user, setUser } = useMyContext();
 
-  console.log(user.IsAdmin);
-
   useEffect(() => {
     if (user.Token === "") router.push("/");
   }, [user.Token, router]);
@@ -179,7 +177,7 @@ export default function Dashboard() {
           {activeComponent == "agents" && <SellerManagement></SellerManagement>}
         </div>
         <div className="d-flex justify-content-center">
-          Marzban Seller Panel v1.7
+          Marzban Seller Panel v1.8
         </div>
       </div>
     </div>

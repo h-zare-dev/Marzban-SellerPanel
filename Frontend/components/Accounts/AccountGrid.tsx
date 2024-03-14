@@ -33,6 +33,7 @@ interface PropsType {
   onDeleting: (account: AccountType) => void;
   onRenewing: (account: AccountType) => void;
   onDisabling: (account: AccountType) => void;
+  onPaying: (account: AccountType) => void;
 }
 
 const AccountGrid = (props: PropsType) => {
@@ -148,12 +149,19 @@ const AccountGrid = (props: PropsType) => {
       headerClassName: "MUIGridHeader",
     },
     {
-      field: "payed",
       headerName: "Payment",
-      width: 110,
-      renderCell: (params: GridRenderCellParams<any, string>) =>
-        RenderPayment(params.value),
+      field: "payed",
+      type: "actions",
+      width: 100,
       headerClassName: "MUIGridHeader",
+      getActions: (params: { row: AccountType }) => [
+        <GridActionsCellItem
+          key="paid"
+          label="Paid"
+          icon={RenderPayment(params.row.payed)}
+          onClick={() => onPaymentClick(params.row)}
+        />,
+      ],
     },
     {
       headerName: "",
@@ -246,22 +254,17 @@ const AccountGrid = (props: PropsType) => {
   };
 
   const RenderPayment = (payment: string | undefined) => {
-    switch (payment) {
-      case "Paid":
-        return (
-          <span className="text-success">
-            <CreditScoreRoundedIcon></CreditScoreRoundedIcon>
-            Paid
-          </span>
-        );
-      case "Unpaid":
-        return (
-          <span className="text-secondary">
-            <CreditCardOffRoundedIcon></CreditCardOffRoundedIcon>
-            Unpaid
-          </span>
-        );
-    }
+    return payment === "Paid" ? (
+      <span className="text-success">
+        <CreditScoreRoundedIcon></CreditScoreRoundedIcon>
+        Paid
+      </span>
+    ) : (
+      <span className="text-secondary">
+        <CreditCardOffRoundedIcon></CreditCardOffRoundedIcon>
+        Unpaid
+      </span>
+    );
   };
 
   const RenderUsage = (account: AccountType) => {
@@ -293,8 +296,12 @@ const AccountGrid = (props: PropsType) => {
     props.onDeleting(account);
   };
 
-  const onDisableAccount = async (account: AccountType) => {
+  const onDisableAccount = (account: AccountType) => {
     props.onDisabling(account);
+  };
+
+  const onPaymentClick = (account: AccountType) => {
+    props.onPaying(account);
   };
 
   return (

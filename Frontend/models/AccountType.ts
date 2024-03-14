@@ -1,5 +1,5 @@
 export default interface AccountType {
-  // show: string;
+  id: string;
   username: string;
   package: string;
   subscription_url: string;

@@ -60,7 +60,7 @@ class AccountController {
     }
   };
 
-  static PayAccount: RequestHandler = async (req, res, next) => {
+  static PayAccounts: RequestHandler = async (req, res, next) => {
     try {
       const accountNames = req.body as {
         Username: string;
@@ -80,6 +80,22 @@ class AccountController {
       }
 
       res.status(200).json("Pay Success!");
+    } catch (error) {
+      next(error);
+    }
+  };
+  static PayAccount: RequestHandler = async (req, res, next) => {
+    try {
+      const id: string = req.params.id;
+
+      const account = await Account.findOne({ _id: id });
+
+      if (account) {
+        account.Payed = !account.Payed;
+        await account.save();
+      }
+
+      res.status(200).json("Payment Changed!");
     } catch (error) {
       next(error);
     }
