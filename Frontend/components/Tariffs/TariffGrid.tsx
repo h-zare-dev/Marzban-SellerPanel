@@ -7,6 +7,7 @@ interface PropsType {
   Loading: boolean;
   Tariffs: TariffType[];
   onDisableAccount: (tariff: TariffType) => void;
+  onFreeChanged: (tariff: TariffType) => void;
 }
 
 export default function TariffGrid(props: PropsType) {
@@ -14,43 +15,59 @@ export default function TariffGrid(props: PropsType) {
     {
       field: "Title",
       headerName: "Title",
-      width: 200,
+      width: 300,
       headerClassName: "MUIGridHeader",
     },
     {
       field: "Duration",
       headerName: "Duration(Days)",
-      width: 180,
+      width: 140,
       headerClassName: "MUIGridHeader",
     },
     {
       field: "DataLimit",
       headerName: "DataLimit(GB)",
-      width: 180,
-      headerClassName: "MUIGridHeader",
-    },
-    {
-      field: "IsFree",
-      headerName: "Is Free",
       width: 140,
       headerClassName: "MUIGridHeader",
     },
     {
-      field: "IsVisible",
-      headerName: "Active",
-      width: 180,
-      headerClassName: "MUIGridHeader",
-    },
-    {
-      headerName: "",
-      field: "delete",
+      headerName: "Free",
+      field: "free",
       type: "actions",
-      width: 50,
+      width: 100,
       headerClassName: "MUIGridHeader",
       getActions: (params: { row: TariffType }) => [
         <GridActionsCellItem
-          key="disable"
-          label="disable"
+          key="free"
+          label="Free"
+          icon={
+            params.row.IsFree ? (
+              <ToggleOnIcon
+                sx={{ fontSize: "35px" }}
+                className="text-success "
+              />
+            ) : (
+              <ToggleOffIcon
+                className="text-secondry "
+                sx={{ fontSize: "35px" }}
+              />
+            )
+          }
+          onClick={() => onFreeEnable(params.row)}
+        />,
+        ,
+      ],
+    },
+    {
+      headerName: "Active",
+      field: "active",
+      type: "actions",
+      width: 100,
+      headerClassName: "MUIGridHeader",
+      getActions: (params: { row: TariffType }) => [
+        <GridActionsCellItem
+          key="active"
+          label="Active"
           icon={
             params.row.IsVisible ? (
               <ToggleOnIcon
@@ -73,6 +90,10 @@ export default function TariffGrid(props: PropsType) {
 
   const onDisableAccount = (tariff: TariffType) => {
     props.onDisableAccount(tariff);
+  };
+
+  const onFreeEnable = (tariff: TariffType) => {
+    props.onFreeChanged(tariff);
   };
 
   return (

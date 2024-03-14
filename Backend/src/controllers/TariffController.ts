@@ -72,7 +72,24 @@ class TariffController {
         tariff.IsVisible = !tariff.IsVisible;
         await tariff.save();
 
-        res.status(200).json({ result: "Tariff Disabled!" });
+        res.status(200).json({ result: "Tariff Changed!" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static FreeChanged: RequestHandler = async (req, res, next) => {
+    try {
+      const _id = new Types.ObjectId(req.params.id);
+
+      const tariff = await Tariff.findOne({ _id: _id });
+
+      if (tariff) {
+        tariff.IsFree = !tariff.IsFree;
+        await tariff.save();
+
+        res.status(200).json({ result: "Tariff Changed!" });
       }
     } catch (error) {
       next(error);

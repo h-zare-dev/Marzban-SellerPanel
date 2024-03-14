@@ -73,6 +73,26 @@ const TariffManagement = () => {
     }
   };
 
+  const onFreeChangedClick = async (tariff: TariffType) => {
+    setLoading(true);
+    try {
+      const url = new URL("api/freechanged/" + tariff._id, config.BACKEND_URL);
+
+      await axios.post(
+        url.toString(),
+        {},
+        {
+          headers: { Authorization: "Bearer " + user.Token },
+        }
+      );
+      refMessages.current?.Show("success", "Package Change Successful!");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      LaodTariff();
+    }
+  };
+
   return (
     <div className="row w-100 border border-solid-1 border-secondary.light rounded py-2">
       <div className="col-12">
@@ -82,6 +102,7 @@ const TariffManagement = () => {
           Tariffs={tariffList}
           Loading={loading}
           onDisableAccount={onDisableAccountClick}
+          onFreeChanged={onFreeChangedClick}
         />
       </div>
     </div>
