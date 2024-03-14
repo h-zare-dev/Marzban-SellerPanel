@@ -87,12 +87,12 @@ class Mongoose {
       const WholeSaler = connection.model("WholeSaler", WholeSalerSchema);
 
       const wholeSaler = new WholeSaler();
-      wholeSaler.Owner = "@saradara2";
-      wholeSaler.MarzbanUrl = "https://main.fairinternet.cloud:2053";
-      wholeSaler.SN = "c9ovlsln#dru";
-      wholeSaler.ExpireDate = new Date("2024-01-31");
+      wholeSaler.Owner = "@whoer";
+      wholeSaler.MarzbanUrl = "https://pro.check-smoke.one/";
+      wholeSaler.SN = "g0maf6jo?$to";
+      wholeSaler.ExpireDate = new Date("2024-02-10");
       wholeSaler.Cluster = "marzbanseller01.xrbygjz";
-      wholeSaler.Database = "SajjadFathi";
+      wholeSaler.Database = "Smoking";
       wholeSaler.DbUsername = "marzbansellerpanel";
       wholeSaler.DbPassword = "ZioVwUWNWcBb2LG6";
 
@@ -114,16 +114,6 @@ class Mongoose {
         tariff.IsVisible = true;
 
         tariff.save();
-
-        const seller = new Seller();
-        seller.Title = "MobileMeli";
-        seller.Counter = 0;
-        seller.Limit = 500;
-        seller.Status = "Active";
-        seller.Username = "meli";
-        seller.Password = "123456789mm@";
-
-        seller.save();
       }
     }
   }

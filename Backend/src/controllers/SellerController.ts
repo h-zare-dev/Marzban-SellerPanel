@@ -141,5 +141,24 @@ class SellerController {
       next(error);
     }
   };
+
+  static DisableSeller: RequestHandler = async (req, res, next) => {
+    try {
+      const _id = new Types.ObjectId(req.params.id);
+
+      const seller = await Seller.findOne({ _id: _id });
+
+      if (seller) {
+        if (seller.Status == "Active") seller.Status = "Deactive";
+        else seller.Status = "Active";
+
+        await seller.save();
+
+        res.status(200).json({ result: "Seller Changed!" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 export default SellerController;

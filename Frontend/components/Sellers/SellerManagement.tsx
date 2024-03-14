@@ -51,6 +51,29 @@ const SellerManagement = () => {
     }
   };
 
+  const onDisableAccountClick = async (seller: SellerType) => {
+    setLoading(true);
+    try {
+      const url = new URL(
+        "api/disableseller/" + seller._id,
+        config.BACKEND_URL
+      );
+
+      await axios.post(
+        url.toString(),
+        {},
+        {
+          headers: { Authorization: "Bearer " + user.Token },
+        }
+      );
+      refMessages.current?.Show("success", "Agent Change Successful!");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      LaodSeller();
+    }
+  };
+
   const onAddClick = async (seller: SellerType) => {
     setLoading(true);
     try {
@@ -77,6 +100,7 @@ const SellerManagement = () => {
           Sellers={sellerList}
           Loading={loading}
           onDeleting={onDeleteClick}
+          onDisableAccount={onDisableAccountClick}
         />
       </div>
     </div>
