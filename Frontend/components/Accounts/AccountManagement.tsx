@@ -30,8 +30,12 @@ export default function AccountManagement() {
   const refMessages = useRef<MessagesHandle>(null);
 
   const onRenewClick = (account: AccountType) => {
+    const paid =
+      accountList.filter(
+        (acc) => acc.username == account.username && acc.payed === "Unpaid"
+      ).length == 0;
     if (
-      account.payed == "Paid" &&
+      paid &&
       (account.status == "expired" || account.status == "limited") &&
       account.data_limit / (1024 * 1024 * 1024) <= user.Limit
     ) {
