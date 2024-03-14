@@ -29,7 +29,7 @@ const SellerManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [config.BACKEND_URL]);
+  }, [config.BACKEND_URL, user.Token]);
 
   useEffect(() => {
     if (user.Token !== "") LaodSeller();
