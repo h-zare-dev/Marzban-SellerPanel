@@ -506,7 +506,7 @@ class MarzbanController {
     const sellerUsername = await ConfigFile.GetSellerAdminUsername();
 
     const params = {
-      username:
+      search:
         sellerUsername.toLowerCase() === seller.toLowerCase() ? "" : seller,
       // offset: offset,
       // limit: limit,
