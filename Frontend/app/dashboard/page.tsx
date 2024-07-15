@@ -25,12 +25,12 @@ export default function Dashboard() {
   const { user, setUser } = useMyContext();
 
   useEffect(() => {
-    if (user.Token === "") router.push("/");
+    if (user.Token === "") router.push("/seller");
   }, [user.Token, router]);
 
   const BtnExit_Click = () => {
     setUser({ Token: "", IsAdmin: false, Username: "", Limit: 0 });
-    router.push("/");
+    router.push("/seller");
   };
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
