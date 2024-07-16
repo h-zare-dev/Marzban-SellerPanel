@@ -244,11 +244,12 @@ class MarzbanController {
       }
 
       if (getInbound.vless) {
+        let flow = await ConfigFile.GetMarzbanFlow();
         proxies = {
           ...proxies,
           vless: {
             id: vlessUUID,
-            flow: await ConfigFile.GetMarzbanFlow(),
+            flow: flow == "none" ? "" : flow,
           },
         };
         inbounds = { ...inbounds, vless: getInbound.vless };
