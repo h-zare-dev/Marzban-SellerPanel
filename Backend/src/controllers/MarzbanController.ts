@@ -45,15 +45,6 @@ class MarzbanController {
 
       //console.log("Start Login to Marzban ", new Date().toLocaleTimeString());
 
-      const resultLogin = await axios.post(
-        apiURL,
-        {
-          username: await ConfigFile.GetMarzbanUsername(),
-          password: await ConfigFile.GetMarzbanPassword(),
-        },
-        config
-      );
-
       //console.log("End Login to Marzban ", new Date().toLocaleTimeString());
 
       //Login Admin Seller Panel
@@ -62,6 +53,15 @@ class MarzbanController {
           res.status(500).json({ Message: "Invalid Account Information" });
           return;
         }
+        const resultLogin = await axios.post(
+          apiURL,
+          {
+            username: await ConfigFile.GetMarzbanUsername(),
+            password: await ConfigFile.GetMarzbanPassword(),
+          },
+          config
+        );
+
         res.status(200).json({
           Token: resultLogin.data.access_token,
           Username: sellerUsername,
@@ -79,6 +79,17 @@ class MarzbanController {
 
       if (seller) {
         const totalUnpaid = await this.GetTotalUnpaid(seller);
+
+        console.log(seller);
+
+        const resultLogin = await axios.post(
+          apiURL,
+          {
+            username: seller.MarzbanUsername,
+            password: seller.MarzbanPassword,
+          },
+          config
+        );
 
         res.status(200).json({
           Token: resultLogin.data.access_token,
@@ -504,18 +515,17 @@ class MarzbanController {
   ) => {
     const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/users";
 
-    const sellerUsername = await ConfigFile.GetSellerAdminUsername();
+    // const sellerUsername = await ConfigFile.GetSellerAdminUsername();
 
     const params = {
-      search:
-        sellerUsername.toLowerCase() === seller.toLowerCase() ? "" : seller,
+      // search: sellerUsername.toLowerCase() === seller.toLowerCase() ? "" : seller,
       // offset: offset,
       // limit: limit,
     };
 
     const config = {
       headers: { Authorization: authorization },
-      params: params,
+      // params: params,
     };
 
     return axios.get(apiURL, config);

@@ -40,27 +40,29 @@ class SellerController {
         Limit: string;
         Username: string | undefined;
         Password: string | undefined;
+        MarzbanUsername: string | undefined;
+        MarzbanPassword: string | undefined;
       };
 
-      const sellerUsername = await ConfigFile.GetSellerAdminUsername();
+      // const sellerUsername = await ConfigFile.GetSellerAdminUsername();
 
-      if (Username?.toLowerCase() === sellerUsername.toLowerCase())
-        throw new Error("Username already Exist!");
+      // if (Username?.toLowerCase() === sellerUsername.toLowerCase())
+      //   throw new Error("Username already Exist!");
 
       if (!(await MarzbanController.CheckToken(req.headers.authorization)))
         throw new Error("Invalid Token");
 
-      const sellers = await Seller.find();
+      // const sellers = await Seller.find();
 
-      const find = sellers.find((seller: any) =>
-        Title?.toLowerCase().includes(seller.Title.toLowerCase())
-      );
+      // const find = sellers.find((seller: any) =>
+      //   Title?.toLowerCase().includes(seller.Title.toLowerCase())
+      // );
 
-      console.log(find);
+      // console.log(find);
 
-      if (find) {
-        throw new Error("Title Is Exists!");
-      }
+      // if (find) {
+      //   throw new Error("Title Is Exists!");
+      // }
 
       const seller = new Seller({
         Title: Title,
@@ -71,8 +73,8 @@ class SellerController {
 
       const result = await seller.save();
 
-      if (result.Title !== seller.Title)
-        throw new Error("Username already Exist!");
+      // if (result.Title !== seller.Title)
+      //   throw new Error("Username already Exist!");
 
       res.status(200).json(result);
     } catch (error) {

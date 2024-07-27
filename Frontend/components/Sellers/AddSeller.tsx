@@ -13,6 +13,8 @@ export default function AddSeller(props: PropsType) {
   const txtUsername = useRef<HTMLInputElement | null>(null);
   const txtPassword = useRef<HTMLInputElement | null>(null);
   const txtLimit = useRef<HTMLInputElement | null>(null);
+  const txtMarzbanUsername = useRef<HTMLInputElement | null>(null);
+  const txtMarzbanPassword = useRef<HTMLInputElement | null>(null);
 
   type MessagesHandle = ElementRef<typeof Messages>;
   const refMessages = useRef<MessagesHandle>(null);
@@ -57,16 +59,30 @@ export default function AddSeller(props: PropsType) {
       return;
     }
 
+    if (!txtMarzbanUsername.current || !txtMarzbanUsername.current.value) {
+      refMessages.current?.Show("error", "Marzban Username Is Required!");
+      return;
+    }
+
+    if (!txtMarzbanPassword.current || !txtMarzbanPassword.current.value) {
+      refMessages.current?.Show("error", "Marzban Password Is Required!");
+      return;
+    }
+
     const title = txtTitle.current.value;
     const limit = +txtLimit.current.value;
     const username = txtUsername.current.value;
     const password = txtPassword.current.value;
+    const marzbanUsername = txtMarzbanUsername.current.value;
+    const marzbanPassword = txtMarzbanPassword.current.value;
 
     const seller: SellerType = {
       Title: title,
       Limit: limit,
       Username: username,
       Password: password,
+      MarzbanUsername: marzbanUsername,
+      MarzbanPassword: marzbanPassword,
     };
     props.onAdding(seller);
   };
@@ -121,6 +137,30 @@ export default function AddSeller(props: PropsType) {
               label="Password"
               variant="outlined"
               inputRef={txtPassword}
+            />
+          </div>
+        </div>
+        <div className="row py-1 my-1">
+          <div className="col-12 py-1 ">
+            <TextField
+              fullWidth
+              id="outlined-basic"
+              required
+              label="Marzban Username"
+              variant="outlined"
+              inputRef={txtMarzbanUsername}
+            />
+          </div>
+        </div>
+        <div className="row py-1 my-1">
+          <div className="col-12 py-1">
+            <TextField
+              fullWidth
+              id="outlined-basic"
+              required
+              label="Marzban Password"
+              variant="outlined"
+              inputRef={txtMarzbanPassword}
             />
           </div>
         </div>

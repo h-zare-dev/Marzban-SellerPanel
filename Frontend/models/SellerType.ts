@@ -4,5 +4,7 @@ export default interface SellerType {
   Limit: number;
   Username: string;
   Password: string;
+  MarzbanUsername: string;
+  MarzbanPassword: string;
   Status?: string;
 }

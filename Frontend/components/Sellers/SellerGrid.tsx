@@ -33,6 +33,18 @@ export default function SellerGrid(props: PropsType) {
       headerClassName: "MUIGridHeader",
     },
     {
+      field: "MarzbanUsername",
+      headerName: "MarzbanUsername",
+      width: 200,
+      headerClassName: "MUIGridHeader",
+    },
+    {
+      field: "MarzbanPassword",
+      headerName: "MarzbanPassword",
+      width: 200,
+      headerClassName: "MUIGridHeader",
+    },
+    {
       field: "Limit",
       headerName: "Limit(GB)",
       width: 100,
