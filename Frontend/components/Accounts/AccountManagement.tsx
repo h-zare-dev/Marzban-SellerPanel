@@ -50,7 +50,7 @@ export default function AccountManagement() {
       : 1.2;
     if (
       account.payed !== "Paid" &&
-      account.used_traffic < +ignore * 1024 * 1024 * 1024
+      (user.IsAdmin || account.used_traffic < +ignore * 1024 * 1024 * 1024)
     ) {
       setSelectedAccount(account);
       refDeleteModal.current?.Show(account.username);

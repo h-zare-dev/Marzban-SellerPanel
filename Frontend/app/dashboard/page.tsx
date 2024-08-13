@@ -177,7 +177,7 @@ export default function Dashboard() {
           {activeComponent == "agents" && <SellerManagement></SellerManagement>}
         </div>
         <div className="d-flex justify-content-center">
-          Marzban Seller Panel v1.9.4
+          Marzban Seller Panel v1.9.5
         </div>
       </div>
     </div>
