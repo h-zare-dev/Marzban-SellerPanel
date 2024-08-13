@@ -460,21 +460,21 @@ class MarzbanController {
       });
 
       if (resultget.data) {
-        const used_traffic =
-          (resultget.data.used_traffic ?? 0) / (1024 * 1024 * 1024);
+        // const used_traffic =
+        //   (resultget.data.used_traffic ?? 0) / (1024 * 1024 * 1024);
 
-        if (used_traffic < (await ConfigFile.GetIgnoreTrafficToRemove())) {
-          await axios.delete(apiURL, {
-            headers: { Authorization: req.headers.authorization },
-          });
+        // if (used_traffic < (await ConfigFile.GetIgnoreTrafficToRemove())) {
+        await axios.delete(apiURL, {
+          headers: { Authorization: req.headers.authorization },
+        });
 
-          await Account.findOneAndRemove({
-            Username: req.params.username,
-            Payed: false,
-          });
+        await Account.findOneAndRemove({
+          Username: req.params.username,
+          Payed: false,
+        });
 
-          res.status(200).json({ message: "Delete Success!" });
-        }
+        res.status(200).json({ message: "Delete Success!" });
+        // }
       }
     } catch (error) {
       next(error);
