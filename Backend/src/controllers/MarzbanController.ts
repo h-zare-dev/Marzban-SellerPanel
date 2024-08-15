@@ -28,7 +28,7 @@ class MarzbanController {
 
   static LoginToMarzbanAPI: RequestHandler = async (req, res, next) => {
     try {
-      console.log("Start Login to Marzban ", new Date().toLocaleTimeString());
+      // console.log("Start Login to Marzban ", new Date().toLocaleTimeString());
 
       const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/admin/token";
 
@@ -68,11 +68,6 @@ class MarzbanController {
           IsAdmin: true,
           Limit: 0,
         });
-        // if (!this.MarzbanAccountsList[sellerUsername])
-        //   await this.GetMarzbanAccountsAndStore(
-        //     "Bearer " + resultLogin.data.access_token,
-        //     sellerUsername
-        //   );
         return;
       }
 
@@ -101,20 +96,15 @@ class MarzbanController {
           IsAdmin: false,
           Limit: seller.Limit - totalUnpaid,
         });
-
-        // if (!this.MarzbanAccountsList[seller.Title])
-        //   await this.GetMarzbanAccountsAndStore(
-        //     "Bearer " + resultLogin.data.access_token,
-        //     seller.Title
-        //   );
       } else {
         res.status(500).json({ Message: "Invalid Account Information" });
       }
     } catch (error) {
       next(error);
-    } finally {
-      console.log("End Login to Marzban ", new Date().toLocaleTimeString());
     }
+    // finally {
+    //   console.log("End Login to Marzban ", new Date().toLocaleTimeString());
+    // }
   };
 
   static GetAccounts: RequestHandler = async (req, res, next) => {
@@ -595,10 +585,10 @@ class MarzbanController {
   ) => {
     const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/users";
 
-    const params = {
-      // offset: offset,
-      // limit: limit,
-    };
+    // const params = {
+    //   offset: offset,
+    //   limit: limit,
+    // };
 
     const config = {
       headers: { Authorization: authorization },

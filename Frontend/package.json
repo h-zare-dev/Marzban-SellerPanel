@@ -1,6 +1,6 @@
 {
-  "name": "seller-panel",
-  "version": "0.1.0",
+  "name": "marzban-seller-panel",
+  "version": "1.9.7",
   "private": true,
   "scripts": {
     "dev": "next dev",
