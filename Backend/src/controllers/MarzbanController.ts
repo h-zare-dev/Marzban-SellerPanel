@@ -69,7 +69,7 @@ class MarzbanController {
           Limit: 0,
         });
         if (!this.MarzbanAccountsList[sellerUsername])
-          this.GetMarzbanAccountsAndStore(
+          await this.GetMarzbanAccountsAndStore(
             "Bearer " + resultLogin.data.access_token,
             sellerUsername
           );
@@ -103,7 +103,7 @@ class MarzbanController {
         });
 
         if (!this.MarzbanAccountsList[seller.Title])
-          this.GetMarzbanAccountsAndStore(
+          await this.GetMarzbanAccountsAndStore(
             "Bearer " + resultLogin.data.access_token,
             seller.Title
           );
@@ -583,6 +583,7 @@ class MarzbanController {
     const config = {
       headers: { Authorization: authorization },
       // params: params,
+      timeout: 120000,
     };
 
     return axios.get(apiURL, config);
