@@ -68,11 +68,11 @@ class MarzbanController {
           IsAdmin: true,
           Limit: 0,
         });
-        if (!this.MarzbanAccountsList["Admin"])
-          await this.GetMarzbanAccountsAndStore(
-            "Bearer " + resultLogin.data.access_token,
-            "Admin"
-          );
+        // if (!this.MarzbanAccountsList[sellerUsername])
+        //   await this.GetMarzbanAccountsAndStore(
+        //     "Bearer " + resultLogin.data.access_token,
+        //     sellerUsername
+        //   );
         return;
       }
 
@@ -102,11 +102,11 @@ class MarzbanController {
           Limit: seller.Limit - totalUnpaid,
         });
 
-        if (!this.MarzbanAccountsList[seller.Title])
-          await this.GetMarzbanAccountsAndStore(
-            "Bearer " + resultLogin.data.access_token,
-            seller.Title
-          );
+        // if (!this.MarzbanAccountsList[seller.Title])
+        //   await this.GetMarzbanAccountsAndStore(
+        //     "Bearer " + resultLogin.data.access_token,
+        //     seller.Title
+        //   );
       } else {
         res.status(500).json({ Message: "Invalid Account Information" });
       }
@@ -324,7 +324,10 @@ class MarzbanController {
       await seller.save();
 
       delete this.MarzbanAccountsList[seller.Title];
-      delete this.MarzbanAccountsList["Admin"];
+
+      delete this.MarzbanAccountsList[
+        await ConfigFile.GetSellerAdminUsername()
+      ];
 
       res.status(200).json(result.data);
     } catch (error) {
@@ -368,7 +371,9 @@ class MarzbanController {
 
       if (seller) delete this.MarzbanAccountsList[seller.Title];
 
-      delete this.MarzbanAccountsList["Admin"];
+      delete this.MarzbanAccountsList[
+        await ConfigFile.GetSellerAdminUsername()
+      ];
 
       res.status(200).json(result.data);
     } catch (error) {
@@ -406,7 +411,9 @@ class MarzbanController {
 
       if (seller) delete this.MarzbanAccountsList[seller.Title];
 
-      delete this.MarzbanAccountsList["Admin"];
+      delete this.MarzbanAccountsList[
+        await ConfigFile.GetSellerAdminUsername()
+      ];
 
       res.status(200).json(result.data);
     } catch (error) {
@@ -486,7 +493,9 @@ class MarzbanController {
 
       delete this.MarzbanAccountsList[seller.Title];
 
-      delete this.MarzbanAccountsList["Admin"];
+      delete this.MarzbanAccountsList[
+        await ConfigFile.GetSellerAdminUsername()
+      ];
 
       res.status(200).json(result.data);
     } catch (error) {
@@ -521,7 +530,9 @@ class MarzbanController {
 
         if (seller) delete this.MarzbanAccountsList[seller.Title];
 
-        delete this.MarzbanAccountsList["Admin"];
+        delete this.MarzbanAccountsList[
+          await ConfigFile.GetSellerAdminUsername()
+        ];
 
         res.status(200).json({ message: "Delete Success!" });
         // }
