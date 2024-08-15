@@ -58,8 +58,6 @@ class SellerController {
       //   Title?.toLowerCase().includes(seller.Title.toLowerCase())
       // );
 
-      // console.log(find);
-
       // if (find) {
       //   throw new Error("Title Is Exists!");
       // }
@@ -100,8 +98,6 @@ class SellerController {
       const find = sellers.find((seller: any) =>
         Title?.toLowerCase().includes(seller.Title.toLowerCase())
       );
-
-      console.log(find);
 
       if (find) {
         throw new Error("Title Is Exists!");
