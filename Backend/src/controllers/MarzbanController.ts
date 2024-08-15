@@ -68,10 +68,10 @@ class MarzbanController {
           IsAdmin: true,
           Limit: 0,
         });
-        if (!this.MarzbanAccountsList[sellerUsername])
+        if (!this.MarzbanAccountsList["Admin"])
           await this.GetMarzbanAccountsAndStore(
             "Bearer " + resultLogin.data.access_token,
-            sellerUsername
+            "Admin"
           );
         return;
       }
@@ -324,6 +324,7 @@ class MarzbanController {
       await seller.save();
 
       delete this.MarzbanAccountsList[seller.Title];
+      delete this.MarzbanAccountsList["Admin"];
 
       res.status(200).json(result.data);
     } catch (error) {
@@ -367,6 +368,8 @@ class MarzbanController {
 
       if (seller) delete this.MarzbanAccountsList[seller.Title];
 
+      delete this.MarzbanAccountsList["Admin"];
+
       res.status(200).json(result.data);
     } catch (error) {
       next(error);
@@ -402,6 +405,8 @@ class MarzbanController {
       const seller = await Seller.findOne({ _id: account?.Seller });
 
       if (seller) delete this.MarzbanAccountsList[seller.Title];
+
+      delete this.MarzbanAccountsList["Admin"];
 
       res.status(200).json(result.data);
     } catch (error) {
@@ -481,6 +486,8 @@ class MarzbanController {
 
       delete this.MarzbanAccountsList[seller.Title];
 
+      delete this.MarzbanAccountsList["Admin"];
+
       res.status(200).json(result.data);
     } catch (error) {
       next(error);
@@ -513,6 +520,8 @@ class MarzbanController {
         const seller = await Seller.findOne({ _id: account?.Seller });
 
         if (seller) delete this.MarzbanAccountsList[seller.Title];
+
+        delete this.MarzbanAccountsList["Admin"];
 
         res.status(200).json({ message: "Delete Success!" });
         // }
