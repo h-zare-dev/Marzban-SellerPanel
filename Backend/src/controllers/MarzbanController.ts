@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
@@ -114,7 +114,10 @@ class MarzbanController {
       // console.log("Start Getting From Marzban ## " + req.params.seller);
       // console.log(this.MarzbanAccountsList[req.params.seller]);
 
-      if (!this.MarzbanAccountsList[req.params.seller])
+      if (
+        !this.MarzbanAccountsList[req.params.seller] ||
+        req.params.seller !== (await ConfigFile.GetSellerAdminUsername())
+      )
         await this.GetMarzbanAccountsAndStore(
           req.headers.authorization,
           req.params.seller,
