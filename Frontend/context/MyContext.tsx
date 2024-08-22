@@ -12,6 +12,7 @@ type UserType = {
 export interface JsonData {
   BACKEND_URL?: string;
   IGNORE_TRAFFIC_TO_REMOVE?: string;
+  RENEW_FORCE_TO_PAID?: string;
   PAGE_TITLE?: string;
   CHANNEL_NAME?: string;
 }

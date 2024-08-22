@@ -35,7 +35,7 @@ export default function AccountManagement() {
         (acc) => acc.username == account.username && acc.payed === "Unpaid"
       ).length == 0;
     if (
-      paid &&
+      (paid || config.RENEW_FORCE_TO_PAID?.toUpperCase() !== "YES") &&
       (account.status == "expired" || account.status == "limited") &&
       account.data_limit / (1024 * 1024 * 1024) <= user.Limit
     ) {
