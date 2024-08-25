@@ -35,7 +35,14 @@ class SellerController {
 
   static AddSeller: RequestHandler = async (req, res, next) => {
     try {
-      const { Title, Limit, Username, Password } = req.body as {
+      const {
+        Title,
+        Limit,
+        Username,
+        Password,
+        MarzbanUsername,
+        MarzbanPassword,
+      } = req.body as {
         Title: string | undefined;
         Limit: string;
         Username: string | undefined;
@@ -54,7 +61,7 @@ class SellerController {
 
       // const sellers = await Seller.find();
 
-      // const find = sellers.find((seller: any) =>
+      // const find = sellers.find((seller) =>
       //   Title?.toLowerCase().includes(seller.Title.toLowerCase())
       // );
 
@@ -67,6 +74,8 @@ class SellerController {
         Limit: +Limit,
         Username: Username,
         Password: Password,
+        MarzbanUsername: MarzbanUsername,
+        MarzbanPassword: MarzbanPassword,
       });
 
       const result = await seller.save();
@@ -95,7 +104,7 @@ class SellerController {
 
       const sellers = await Seller.find();
 
-      const find = sellers.find((seller: any) =>
+      const find = sellers.find((seller) =>
         Title?.toLowerCase().includes(seller.Title.toLowerCase())
       );
 
