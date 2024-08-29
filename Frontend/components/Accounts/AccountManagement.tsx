@@ -115,8 +115,11 @@ export default function AccountManagement() {
             headers: { Authorization: "Bearer " + user.Token },
           }
         );
-        if (!tariff.IsFree) user.Limit -= tariff.DataLimit;
-        setUser({ ...user, Limit: user.Limit });
+        if (!tariff.IsFree) {
+          user.Limit -= tariff.DataLimit;
+          user.TotalPrice += tariff.Price;
+        }
+        setUser({ ...user, Limit: user.Limit, TotalPrice: user.TotalPrice });
         refMessages.current?.Show("success", "Account Added Successful!");
       } catch (error) {
         console.log(error);
@@ -170,7 +173,8 @@ export default function AccountManagement() {
         });
 
         user.Limit += selectedAccount?.data_limit / (1024 * 1024 * 1024);
-        setUser({ ...user, Limit: user.Limit });
+        user.TotalPrice -= selectedAccount?.price;
+        setUser({ ...user, Limit: user.Limit, TotalPrice: user.TotalPrice });
       } catch (error) {
         console.log(error);
       } finally {
@@ -200,7 +204,8 @@ export default function AccountManagement() {
         );
 
         user.Limit -= selectedAccount?.data_limit / (1024 * 1024 * 1024);
-        setUser({ ...user, Limit: user.Limit });
+        user.TotalPrice += selectedAccount?.price;
+        setUser({ ...user, Limit: user.Limit, TotalPrice: user.TotalPrice });
       } catch (error) {
         console.log(error);
       } finally {

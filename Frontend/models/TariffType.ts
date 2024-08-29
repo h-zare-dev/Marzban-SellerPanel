@@ -3,6 +3,7 @@ export default interface TariffType {
   Title: string;
   DataLimit: number;
   Duration: number;
+  Price: number;
   IsFree: boolean;
   IsVisible: boolean;
 }

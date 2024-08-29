@@ -7,6 +7,7 @@ type UserType = {
   IsAdmin: boolean;
   Token: string;
   Limit: number;
+  TotalPrice: number;
 };
 
 export interface JsonData {
@@ -36,6 +37,7 @@ export const MyContextProvider: React.FC<PropsType> = (props) => {
     IsAdmin: false,
     Token: "",
     Limit: 5,
+    TotalPrice: 5,
   });
   const [config, setConfig] = React.useState({});
 

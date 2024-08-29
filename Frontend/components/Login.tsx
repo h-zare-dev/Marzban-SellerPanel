@@ -42,6 +42,7 @@ export default function Login() {
             IsAdmin: resultAccounts.data.IsAdmin,
             Token: resultAccounts.data.Token,
             Limit: resultAccounts.data.Limit,
+            TotalPrice: resultAccounts.data.TotalPrice,
           });
           router.push("/dashboard");
         } else {

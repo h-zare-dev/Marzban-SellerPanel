@@ -15,6 +15,7 @@ export default function AddTariff(props: PropsType) {
   const txtTitle = useRef<HTMLInputElement | null>(null);
   const txtDuration = useRef<HTMLInputElement | null>(null);
   const txtDataLimit = useRef<HTMLInputElement | null>(null);
+  const txtPrice = useRef<HTMLInputElement | null>(null);
 
   const [isFree, setIsFree] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -51,14 +52,25 @@ export default function AddTariff(props: PropsType) {
       return;
     }
 
+    if (
+      !txtPrice.current ||
+      !txtPrice.current.value ||
+      txtPrice.current.value === ""
+    ) {
+      refMessages.current?.Show("error", "Price Is Required!");
+      return;
+    }
+
     const title = txtTitle.current.value;
     const datalimit = +txtDataLimit.current.value;
     const duration = +txtDuration.current.value;
+    const price = +txtPrice.current.value;
 
     const tariff: TariffType = {
       Title: title,
       DataLimit: datalimit,
       Duration: duration,
+      Price: price,
       IsFree: isFree,
       IsVisible: isVisible,
     };
@@ -70,7 +82,7 @@ export default function AddTariff(props: PropsType) {
       <Messages ref={refMessages}></Messages>
       <div className="container  moduleContainerStyle moduleContainer py-2  rounded  ">
         <div className="row py-1 my-1">
-          <div className="col-12 ">
+          <div className="col-md-6 col-sm-12 py-1 ">
             <TextField
               fullWidth
               id="outlined-basic"
@@ -80,8 +92,6 @@ export default function AddTariff(props: PropsType) {
               inputRef={txtTitle}
             />
           </div>
-        </div>
-        <div className="row py-1 my-1">
           <div className="col-md-6 col-sm-12 py-1 ">
             <TextField
               fullWidth
@@ -93,6 +103,8 @@ export default function AddTariff(props: PropsType) {
               inputRef={txtDuration}
             />
           </div>
+        </div>
+        <div className="row py-1 my-1">
           <div className="col-md-6 col-sm-12 py-1">
             <TextField
               fullWidth
@@ -102,6 +114,16 @@ export default function AddTariff(props: PropsType) {
               variant="outlined"
               type="number"
               inputRef={txtDataLimit}
+            />
+          </div>
+          <div className="col-md-6 col-sm-12 py-1 ">
+            <TextField
+              fullWidth
+              id="outlined-basic"
+              required
+              label="Price"
+              variant="outlined"
+              inputRef={txtPrice}
             />
           </div>
           <div className="col-md-6 col-sm-12"></div>

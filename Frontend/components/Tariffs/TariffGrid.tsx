@@ -31,6 +31,12 @@ export default function TariffGrid(props: PropsType) {
       headerClassName: "MUIGridHeader",
     },
     {
+      field: "Price",
+      headerName: "Price(IRT)",
+      width: 140,
+      headerClassName: "MUIGridHeader",
+    },
+    {
       headerName: "Free",
       field: "free",
       type: "actions",

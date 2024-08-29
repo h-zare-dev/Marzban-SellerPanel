@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import axios from "axios";
-import { Types } from "mongoose";
+import { Document, Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
 import Helper from "../utils/Helper";
@@ -67,6 +67,7 @@ class MarzbanController {
           Username: sellerUsername,
           IsAdmin: true,
           Limit: 0,
+          TotalPrice: 0,
         });
         return;
       }
@@ -94,7 +95,8 @@ class MarzbanController {
           Token: resultLogin.data.access_token,
           Username: seller.Title,
           IsAdmin: false,
-          Limit: seller.Limit - totalUnpaid,
+          Limit: seller.Limit - totalUnpaid.TotalLimitUnpaid,
+          TotalPrice: totalUnpaid.TotalPriceUnpaid,
         });
       } else {
         res.status(500).json({ Message: "Invalid Account Information" });
@@ -138,46 +140,53 @@ class MarzbanController {
 
       const subscriptionUrl = await ConfigFile.GetSubscriptionURL();
 
-      const accounts = sellerAccounts.map((item) => {
-        const marzbanAccount = marzbanAccounts.filter(
-          (account: MarzbanAccount) => account.username == item.Username
-        )[0];
+      const accounts = await Promise.all(
+        sellerAccounts.map(async (item) => {
+          const marzbanAccount = marzbanAccounts.filter(
+            (account: MarzbanAccount) => account.username == item.Username
+          )[0];
 
-        if (!marzbanAccount)
+          const tarrif = await Tariff.findOne({ _id: item.TariffId });
+
+          if (!marzbanAccount)
+            return {
+              id: item._id,
+              username: item.Username,
+              tarif: item.Tariff,
+              payed: item.Payed ? "Paid" : "Unpaid",
+            };
+
           return {
             id: item._id,
-            username: item.Username,
-            tarif: item.Tariff,
+            counter: +marzbanAccount.username.replace(req.params.seller, ""),
+            username: marzbanAccount.username,
+            package: item.Tariff,
+            price: tarrif?.Price,
+            data_limit: marzbanAccount.data_limit,
+            data_limit_string: Helper.CalculateTraffic(
+              marzbanAccount.data_limit
+            ),
+            used_traffic: marzbanAccount.used_traffic,
+            used_traffic_string: Helper.CalculateTraffic(
+              marzbanAccount.used_traffic
+            ),
+            expire: marzbanAccount.expire,
+            expire_string: Helper.CalculateRemainDate(marzbanAccount.expire),
+            status: marzbanAccount.status,
+            subscription_url: marzbanAccount.subscription_url.includes("https")
+              ? marzbanAccount.subscription_url
+              : subscriptionUrl + marzbanAccount.subscription_url,
+            online: Helper.IsOnline(marzbanAccount.online_at),
+            online_at: Helper.CalculateOnlineDate(marzbanAccount.online_at),
+            sub_updated_at: Helper.CalculateUpdateSubscriptionDate(
+              marzbanAccount.sub_updated_at
+            ),
+            sub_last_user_agent: marzbanAccount.sub_last_user_agent,
             payed: item.Payed ? "Paid" : "Unpaid",
+            note: marzbanAccount.note,
           };
-
-        return {
-          id: item._id,
-          counter: +marzbanAccount.username.replace(req.params.seller, ""),
-          username: marzbanAccount.username,
-          package: item.Tariff,
-          data_limit: marzbanAccount.data_limit,
-          data_limit_string: Helper.CalculateTraffic(marzbanAccount.data_limit),
-          used_traffic: marzbanAccount.used_traffic,
-          used_traffic_string: Helper.CalculateTraffic(
-            marzbanAccount.used_traffic
-          ),
-          expire: marzbanAccount.expire,
-          expire_string: Helper.CalculateRemainDate(marzbanAccount.expire),
-          status: marzbanAccount.status,
-          subscription_url: marzbanAccount.subscription_url.includes("https")
-            ? marzbanAccount.subscription_url
-            : subscriptionUrl + marzbanAccount.subscription_url,
-          online: Helper.IsOnline(marzbanAccount.online_at),
-          online_at: Helper.CalculateOnlineDate(marzbanAccount.online_at),
-          sub_updated_at: Helper.CalculateUpdateSubscriptionDate(
-            marzbanAccount.sub_updated_at
-          ),
-          sub_last_user_agent: marzbanAccount.sub_last_user_agent,
-          payed: item.Payed ? "Paid" : "Unpaid",
-          note: marzbanAccount.note,
-        };
-      });
+        })
+      );
 
       const filteredAccounts = accounts
         .filter((acc) => acc.data_limit)
@@ -622,8 +631,9 @@ class MarzbanController {
     return accounts;
   };
 
-  static GetTotalUnpaid = async (seller: any): Promise<number> => {
-    let totalUnpaid = 0;
+  static GetTotalUnpaid = async (seller: Document) => {
+    let totalLimitUnpaid = 0;
+    let totalPriceUnpaid = 0;
 
     // console.log("Start Calculate totalUnpaid ## " + seller.Title);
     const accounts = await Account.find({
@@ -637,11 +647,17 @@ class MarzbanController {
       const tariff = tariffs.find(
         (tariff) => tariff._id.toString() === account.TariffId?.toString()
       );
-      if (tariff) totalUnpaid += tariff.DataLimit ?? 0;
+      if (tariff) {
+        totalPriceUnpaid += tariff.Price ?? 0;
+        totalLimitUnpaid += tariff.DataLimit ?? 0;
+      }
     });
 
     // console.log("End Calculate totalUnpaid -- " + totalUnpaid);
-    return totalUnpaid;
+    return {
+      TotalLimitUnpaid: totalLimitUnpaid,
+      TotalPriceUnpaid: totalPriceUnpaid,
+    };
   };
 
   static CheckToken = async (authorization?: string) => {
@@ -656,7 +672,7 @@ class MarzbanController {
       const resultMarzban = await axios.get(apiURL, config);
 
       return resultMarzban.status === 200;
-    } catch (err: any) {}
+    } catch (err) {}
   };
 }
 

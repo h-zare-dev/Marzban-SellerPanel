@@ -2,6 +2,7 @@ export default interface AccountType {
   id: string;
   username: string;
   package: string;
+  price: number;
   subscription_url: string;
   online: string;
   online_at: string;

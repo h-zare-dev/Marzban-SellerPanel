@@ -109,6 +109,12 @@ const AccountGrid = (props: PropsType) => {
       headerClassName: "MUIGridHeader",
     },
     {
+      field: "price",
+      headerName: "Price",
+      width: 80,
+      headerClassName: "MUIGridHeader",
+    },
+    {
       field: "data_limit_string",
       headerName: "Limit",
       width: 110,
