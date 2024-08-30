@@ -36,7 +36,9 @@ export default function AccountManagement() {
       ).length == 0;
     if (
       (paid || config.RENEW_FORCE_TO_PAID?.toUpperCase() !== "YES") &&
-      (account.status == "expired" || account.status == "limited") &&
+      (account.status == "expired" ||
+        account.status == "limited" ||
+        config.RENEW_FORCE_TO_LIMITED_AND_EXPIRED?.toUpperCase() !== "YES") &&
       account.data_limit / (1024 * 1024 * 1024) <= user.Limit
     ) {
       setSelectedAccount(account);

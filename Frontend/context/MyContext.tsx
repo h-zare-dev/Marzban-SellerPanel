@@ -14,6 +14,7 @@ export interface JsonData {
   BACKEND_URL?: string;
   IGNORE_TRAFFIC_TO_REMOVE?: string;
   RENEW_FORCE_TO_PAID?: string;
+  RENEW_FORCE_TO_LIMITED_AND_EXPIRED?: string;
   PAGE_TITLE?: string;
   CHANNEL_NAME?: string;
 }
