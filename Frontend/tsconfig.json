@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["node", "react", "react-dom", "react-transition-group"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
