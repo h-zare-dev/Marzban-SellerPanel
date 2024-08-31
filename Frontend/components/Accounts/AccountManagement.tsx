@@ -12,6 +12,7 @@ import AccountGrid from "./AccountGrid";
 import AccountType from "@/models/AccountType";
 import TariffType from "@/models/TariffType";
 import Messages from "../General/Messages";
+import { TextField } from "@mui/material";
 
 export default function AccountManagement() {
   const { user, config, setUser } = useMyContext();
@@ -19,6 +20,7 @@ export default function AccountManagement() {
   const [loading, setLoading] = useState(false);
   const [accountList, setAccountList] = useState<AccountType[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<AccountType>();
+  const [searchText, setSearchText] = useState("");
 
   type DeleteModalHandle = ElementRef<typeof DeleteModal>;
   const refDeleteModal = useRef<DeleteModalHandle>(null);
@@ -219,10 +221,27 @@ export default function AccountManagement() {
     setLoading(true);
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+  };
+
+  const filteredRows = accountList.filter((row) => {
+    return row.username.toLowerCase().includes(searchText.toLowerCase());
+  });
+
   return (
     <div className="container-fluid bg-primery">
       <AddAccount onAdding={OnAddClick} Mode="Add" />
       <div className="row">
+        <div className="col justify-content-start d-flex mt-1">
+          <TextField
+            variant="outlined"
+            label="Search"
+            value={searchText}
+            onChange={handleSearchChange}
+            sx={{ width: 350 }}
+          />
+        </div>
         <div className="col justify-content-end d-flex mt-1">
           <button
             className="btn border-2 border border-success p-1"
@@ -240,7 +259,7 @@ export default function AccountManagement() {
           <Messages ref={refMessages}></Messages>
           <div className="ContainerGrid">
             <AccountGrid
-              Accounts={accountList}
+              Accounts={filteredRows}
               Loading={loading}
               onDeleting={onDeleteClick}
               onDisabling={onDisabledClick}

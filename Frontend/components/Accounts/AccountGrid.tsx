@@ -325,7 +325,7 @@ const AccountGrid = (props: PropsType) => {
           boxShadow: 2,
           border: 2,
           borderColor: "purple",
-          width: "400",
+          width: "100%",
           "& .MuiDataGrid-:hover": {
             backgroundColor: "lightgray",
             color: "purple",
