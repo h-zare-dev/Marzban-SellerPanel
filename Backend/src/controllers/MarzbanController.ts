@@ -111,7 +111,7 @@ class MarzbanController {
 
   static GetAccounts: RequestHandler = async (req, res, next) => {
     try {
-      console.log("Start GetAccounts ", new Date().toLocaleTimeString());
+      // console.log("Start GetAccounts ", new Date().toLocaleTimeString());
 
       // console.log("Start Getting From Marzban ## " + req.params.seller);
       // console.log(this.MarzbanAccountsList[req.params.seller]);
@@ -197,7 +197,7 @@ class MarzbanController {
     } catch (error) {
       next(error);
     } finally {
-      console.log("End GetAccounts ", new Date().toLocaleTimeString());
+      // console.log("End GetAccounts ", new Date().toLocaleTimeString());
     }
   };
 
@@ -210,10 +210,11 @@ class MarzbanController {
 
       const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/user";
 
-      const { username, note, tariffId } = req.body as {
+      const { username, note, tariffId, onhold } = req.body as {
         username: string;
         note: string;
         tariffId: string;
+        onhold: boolean;
       };
 
       if (!tariffId && tariffId === "") {
@@ -249,12 +250,33 @@ class MarzbanController {
 
       seller.Counter++;
 
-      const currentDate = new Date();
+      let data_limit: number | undefined = undefined;
 
-      currentDate.setDate(currentDate.getDate() + (tariff.Duration ?? 0));
-      currentDate.setHours(20, 30, 0);
+      let expireTimestamp: number | undefined = undefined;
+      const expireDate = new Date();
 
-      const expireTimestamp = Math.floor(currentDate.getTime() / 1000);
+      let expireDuration: number | undefined = undefined;
+      let onHoldTimeout: Date | undefined = undefined;
+
+      let status: string | undefined = undefined;
+
+      if (onhold) {
+        expireDuration = (tariff.Duration ?? 0) * (60 * 60 * 24);
+
+        expireDate.setDate(expireDate.getDate() + 30);
+        expireDate.setHours(20, 30, 0);
+
+        onHoldTimeout = expireDate;
+        status = "on_hold";
+      } else {
+        expireDate.setDate(expireDate.getDate() + (tariff.Duration ?? 0));
+        expireDate.setHours(20, 30, 0);
+
+        expireTimestamp = Math.floor(expireDate.getTime() / 1000);
+      }
+
+      if (tariff.Duration && tariff.Duration > 0)
+        data_limit = tariff.DataLimit * 1024 * 1024 * 1024;
 
       const generateUsername =
         username + seller?.Counter.toString().padStart(3, "0");
@@ -307,7 +329,10 @@ class MarzbanController {
           proxies: proxies,
           inbounds: inbounds,
           expire: expireTimestamp,
-          data_limit: (tariff?.DataLimit ?? 0) * 1024 * 1024 * 1024,
+          data_limit: data_limit,
+          on_hold_expire_duration: expireDuration,
+          on_hold_timeout: onHoldTimeout,
+          status: status,
         },
         {
           headers: { Authorization: req.headers.authorization },
@@ -587,7 +612,7 @@ class MarzbanController {
       [seller]: resultMarzban.data.users,
     };
 
-    console.log("MarzbanAccountList Filled!!!!");
+    // console.log("MarzbanAccountList Filled!!!!");
   };
 
   static GetMarzbanAccounts = async (

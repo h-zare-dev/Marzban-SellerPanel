@@ -102,7 +102,11 @@ export default function AccountManagement() {
       }
   };
 
-  const OnAddClick = async (tariff: TariffType, note: string) => {
+  const OnAddClick = async (
+    tariff: TariffType,
+    note: string,
+    onHold: boolean
+  ) => {
     if (user.Limit >= tariff.DataLimit)
       try {
         StartLoading();
@@ -114,6 +118,7 @@ export default function AccountManagement() {
             username: user.Username,
             note: note,
             tariffId: tariff._id,
+            onhold: onHold,
           },
           {
             headers: { Authorization: "Bearer " + user.Token },
@@ -221,12 +226,25 @@ export default function AccountManagement() {
     setLoading(true);
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const SearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value);
   };
 
   const filteredRows = accountList.filter((row) => {
-    return row.username.toLowerCase().includes(searchText.toLowerCase());
+    return (
+      row.username.toLowerCase().includes(searchText.toLowerCase()) ||
+      row.note?.toLowerCase().includes(searchText.toLowerCase()) ||
+      row.package.toLowerCase().includes(searchText.toLowerCase()) ||
+      row.price.toString().includes(searchText) ||
+      row.data_limit_string.toLowerCase().includes(searchText.toLowerCase()) ||
+      row.used_traffic_string
+        .toLowerCase()
+        .includes(searchText.toLowerCase()) ||
+      row.expire_string.toLowerCase().includes(searchText.toLowerCase()) ||
+      row.status.toLowerCase().includes(searchText.toLowerCase()) ||
+      row.sub_updated_at?.toLowerCase().includes(searchText.toLowerCase()) ||
+      row.sub_last_user_agent?.toLowerCase().includes(searchText.toLowerCase())
+    );
   });
 
   return (
@@ -236,9 +254,9 @@ export default function AccountManagement() {
         <div className="col justify-content-start d-flex mt-1">
           <TextField
             variant="outlined"
-            label="Search"
+            label="Search Everything"
             value={searchText}
-            onChange={handleSearchChange}
+            onChange={SearchChange}
             sx={{ width: 350 }}
           />
         </div>

@@ -12,6 +12,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import RenewIcon from "@mui/icons-material/RecyclingOutlined";
 import LinkIcon from "@mui/icons-material/Link";
 import CheckIcon from "@mui/icons-material/Check";
+import WatchLaterIcon from "@mui/icons-material/WatchLater";
 import CreditScoreRoundedIcon from "@mui/icons-material/CreditScoreRounded";
 import CreditCardOffRoundedIcon from "@mui/icons-material/CreditCardOffRounded";
 import GppMaybeRoundedIcon from "@mui/icons-material/GppMaybeRounded";
@@ -232,28 +233,31 @@ const AccountGrid = (props: PropsType) => {
       case "active":
         return (
           <span className="text-success">
-            <GppGoodRoundedIcon></GppGoodRoundedIcon> {status}
+            <GppGoodRoundedIcon></GppGoodRoundedIcon>Active
+          </span>
+        );
+      case "on_hold":
+        return (
+          <span className="text-purple">
+            <WatchLaterIcon></WatchLaterIcon>On Hold
           </span>
         );
       case "disabled":
         return (
           <span className="text-secondary">
-            <GppBadRoundedIcon></GppBadRoundedIcon>
-            {status}
+            <GppBadRoundedIcon></GppBadRoundedIcon>Disabled
           </span>
         );
       case "expired":
         return (
           <span className="text-primary">
-            <SafetyCheckRoundedIcon></SafetyCheckRoundedIcon>
-            {status}
+            <SafetyCheckRoundedIcon></SafetyCheckRoundedIcon>Expired
           </span>
         );
       case "limited":
         return (
           <span className="text-danger">
-            <GppMaybeRoundedIcon></GppMaybeRoundedIcon>
-            {status}
+            <GppMaybeRoundedIcon></GppMaybeRoundedIcon>Limited
           </span>
         );
     }

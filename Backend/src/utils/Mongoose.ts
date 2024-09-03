@@ -45,7 +45,10 @@ class Mongoose {
       throw new Error("DbWholeSaler connection String Not Found");
 
     mongoose.set("strictQuery", true);
-    await mongoose.connect(this.GetDbWholeSalerConnectionString());
+    await mongoose.connect(this.GetDbWholeSalerConnectionString(), {
+      maxPoolSize: 20,
+      maxConnecting: 25,
+    });
     return true;
   }
 
@@ -122,7 +125,10 @@ class Mongoose {
     if (!connectionString && connectionString == "")
       throw new Error("MongoDb connection String Not Found");
 
-    return await mongoose.createConnection(connectionString);
+    return await mongoose.createConnection(connectionString, {
+      maxPoolSize: 20,
+      maxConnecting: 25,
+    });
   }
 
   static async CopyDatabase(destinatioConnectionString: string) {
