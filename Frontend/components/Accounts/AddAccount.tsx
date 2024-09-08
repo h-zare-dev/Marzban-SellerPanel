@@ -113,7 +113,7 @@ const AddAccount = forwardRef<HTMLSelectElement, PropsType>((props, ref) => {
           >
             {FillTariffs()}
           </select>
-          <TextField
+          {/*<TextField
             id="outlined-basic"
             label="Note"
             variant="outlined"
@@ -123,7 +123,7 @@ const AddAccount = forwardRef<HTMLSelectElement, PropsType>((props, ref) => {
             control={<Checkbox inputRef={chkOnHold} />}
             label="OnHold"
             className="mx-2"
-          />
+          /> */}
         </div>
       </div>
     </div>

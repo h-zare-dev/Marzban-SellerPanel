@@ -129,8 +129,6 @@ class MarzbanController {
 
       const marzbanAccounts = this.MarzbanAccountsList[req.params.seller];
 
-      console.log(req.hostname);
-
       // console.log("End Getting From Marzban -- " + marzbanAccounts.length);
 
       const isAll = req.params.isall === "true";
@@ -263,7 +261,7 @@ class MarzbanController {
       let status: string | undefined = undefined;
 
       if (onhold) {
-        expireDuration = (tariff.Duration ?? 0) * (60 * 60 * 24);
+        expireDuration = ((tariff.Duration ?? 0) + 1) * (60 * 60 * 24);
 
         expireDate.setDate(expireDate.getDate() + 30);
         expireDate.setHours(20, 30, 0);
