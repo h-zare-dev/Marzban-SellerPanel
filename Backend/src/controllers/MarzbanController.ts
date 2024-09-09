@@ -138,7 +138,7 @@ class MarzbanController {
         isAll
       );
 
-      const subscriptionUrl = await ConfigFile.GetSubscriptionURL();
+      const sellerSubscriptionUrl = await ConfigFile.GetSubscriptionURL();
 
       const accounts = await Promise.all(
         sellerAccounts.map(async (item) => {
@@ -173,9 +173,10 @@ class MarzbanController {
             expire: marzbanAccount.expire,
             expire_string: Helper.CalculateRemainDate(marzbanAccount.expire),
             status: marzbanAccount.status,
-            subscription_url: marzbanAccount.subscription_url.includes("https")
-              ? marzbanAccount.subscription_url
-              : subscriptionUrl + marzbanAccount.subscription_url,
+            subscription_url: this.GetSubscriptionUrl(
+              marzbanAccount.subscription_url,
+              sellerSubscriptionUrl
+            ),
             online: Helper.IsOnline(marzbanAccount.online_at),
             online_at: Helper.CalculateOnlineDate(marzbanAccount.online_at),
             sub_updated_at: Helper.CalculateUpdateSubscriptionDate(
@@ -683,6 +684,21 @@ class MarzbanController {
       TotalLimitUnpaid: totalLimitUnpaid,
       TotalPriceUnpaid: totalPriceUnpaid,
     };
+  };
+
+  static GetSubscriptionUrl = (
+    marzbanSubscriptionUrl: string,
+    sellerSubscriptionUrl: string
+  ) => {
+    console.log(sellerSubscriptionUrl);
+    const url =
+      sellerSubscriptionUrl.trim() !== ""
+        ? sellerSubscriptionUrl +
+          "/sub/" +
+          marzbanSubscriptionUrl.split("/sub/")[1]
+        : marzbanSubscriptionUrl;
+
+    return url;
   };
 
   static CheckToken = async (authorization?: string) => {
