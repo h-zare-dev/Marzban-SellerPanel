@@ -50,6 +50,7 @@ const DeleteModal = forwardRef<ForwardRefHandle, PropsType>((props, ref) => {
             style={{ height: "auto", maxWidth: "100%", width: "100%" }}
             value={subscriptionUrl}
             viewBox={`0 0 256 256`}
+            level="H"
           />
         </div>
       </Modal.Body>
