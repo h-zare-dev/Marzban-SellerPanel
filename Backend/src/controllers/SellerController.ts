@@ -4,6 +4,7 @@ import { Types } from "mongoose";
 import Seller from "../models/Seller";
 import ConfigFile from "../utils/Config";
 import MarzbanController from "./MarzbanController";
+import axios from "axios";
 
 class SellerController {
   static GetSellerList: RequestHandler = async (req, res, next) => {
@@ -51,23 +52,28 @@ class SellerController {
         MarzbanPassword: string | undefined;
       };
 
-      // const sellerUsername = await ConfigFile.GetSellerAdminUsername();
-
-      // if (Username?.toLowerCase() === sellerUsername.toLowerCase())
-      //   throw new Error("Username already Exist!");
-
       if (!(await MarzbanController.CheckToken(req.headers.authorization)))
         throw new Error("Invalid Token");
 
-      // const sellers = await Seller.find();
+      try {
+        const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/admin/token";
 
-      // const find = sellers.find((seller) =>
-      //   Title?.toLowerCase().includes(seller.Title.toLowerCase())
-      // );
+        const config = {
+          headers: { "content-type": "application/x-www-form-urlencoded" },
+        };
 
-      // if (find) {
-      //   throw new Error("Title Is Exists!");
-      // }
+        const resultLogin = await axios.post(
+          apiURL,
+          {
+            username: MarzbanUsername,
+            password: MarzbanPassword,
+          },
+          config
+        );
+      } catch (AxiosError) {
+        res.status(404).json({ Message: "Invalid Account Information" });
+        return;
+      }
 
       const seller = new Seller({
         Title: Title,
@@ -79,9 +85,6 @@ class SellerController {
       });
 
       const result = await seller.save();
-
-      // if (result.Title !== seller.Title)
-      //   throw new Error("Username already Exist!");
 
       res.status(200).json(result);
     } catch (error) {

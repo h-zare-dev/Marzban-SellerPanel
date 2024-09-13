@@ -1,5 +1,5 @@
 "use client";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
 
 import { useMyContext } from "@/context/MyContext";
@@ -84,8 +84,32 @@ const SellerManagement = () => {
       });
       refMessages.current?.Show("success", "Agent Insert Successful!");
     } catch (error) {
-      refMessages.current?.Show("error", "Something Is Wrong!");
-      console.log(error);
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+
+        if (axiosError.response) {
+          const statusCode = axiosError.response.status;
+
+          if (statusCode === 404) {
+            refMessages.current?.Show(
+              "error",
+              "Invalid Marzban Account Information"
+            );
+          } else {
+            console.log("Internal Server Error : ", error);
+            refMessages.current?.Show(
+              "error",
+              "Internal Server Error! Please try again later."
+            );
+          }
+        } else {
+          console.log("No response received:", axiosError.message);
+          refMessages.current?.Show("error", "No response from the server.");
+        }
+      } else {
+        console.log("Unknown error:", error);
+        refMessages.current?.Show("error", "An unknown error occurred.");
+      }
     } finally {
       LaodSeller();
     }
