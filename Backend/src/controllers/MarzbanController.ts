@@ -53,23 +53,30 @@ class MarzbanController {
           res.status(500).json({ Message: "Invalid Account Information" });
           return;
         }
-        const resultLogin = await axios.post(
-          apiURL,
-          {
-            username: await ConfigFile.GetMarzbanUsername(),
-            password: await ConfigFile.GetMarzbanPassword(),
-          },
-          config
-        );
+        try {
+          const resultLogin = await axios.post(
+            apiURL,
+            {
+              username: await ConfigFile.GetMarzbanUsername(),
+              password: await ConfigFile.GetMarzbanPassword(),
+            },
+            config
+          );
 
-        res.status(200).json({
-          Token: resultLogin.data.access_token,
-          Username: sellerUsername,
-          IsAdmin: true,
-          Limit: 0,
-          TotalPrice: 0,
-        });
-        return;
+          const totalUnpaid = await this.GetTotalUnpaid(undefined, true);
+
+          res.status(200).json({
+            Token: resultLogin.data.access_token,
+            Username: sellerUsername,
+            IsAdmin: true,
+            Limit: 0,
+            TotalPrice: totalUnpaid.TotalPriceUnpaid,
+          });
+          return;
+        } catch (AxiosError) {
+          res.status(500).json({ Message: "Invalid Account Information" });
+          return;
+        }
       }
 
       //Login Seller
@@ -80,24 +87,29 @@ class MarzbanController {
       });
 
       if (seller) {
-        const totalUnpaid = await this.GetTotalUnpaid(seller);
+        try {
+          const resultLogin = await axios.post(
+            apiURL,
+            {
+              username: seller.MarzbanUsername,
+              password: seller.MarzbanPassword,
+            },
+            config
+          );
 
-        const resultLogin = await axios.post(
-          apiURL,
-          {
-            username: seller.MarzbanUsername,
-            password: seller.MarzbanPassword,
-          },
-          config
-        );
+          const totalUnpaid = await this.GetTotalUnpaid(seller, false);
 
-        res.status(200).json({
-          Token: resultLogin.data.access_token,
-          Username: seller.Title,
-          IsAdmin: false,
-          Limit: seller.Limit - totalUnpaid.TotalLimitUnpaid,
-          TotalPrice: totalUnpaid.TotalPriceUnpaid,
-        });
+          res.status(200).json({
+            Token: resultLogin.data.access_token,
+            Username: seller.Title,
+            IsAdmin: false,
+            Limit: seller.Limit - totalUnpaid.TotalLimitUnpaid,
+            TotalPrice: totalUnpaid.TotalPriceUnpaid,
+          });
+        } catch (AxiosError) {
+          res.status(500).json({ Message: "Invalid Account Information" });
+          return;
+        }
       } else {
         res.status(500).json({ Message: "Invalid Account Information" });
       }
@@ -657,15 +669,22 @@ class MarzbanController {
     return accounts;
   };
 
-  static GetTotalUnpaid = async (seller: Document) => {
+  static GetTotalUnpaid = async (
+    seller: Document | undefined,
+    IsAdmin: boolean
+  ) => {
     let totalLimitUnpaid = 0;
     let totalPriceUnpaid = 0;
 
     // console.log("Start Calculate totalUnpaid ## " + seller.Title);
-    const accounts = await Account.find({
-      Seller: seller,
-      Payed: false,
-    });
+    const accounts = IsAdmin
+      ? await Account.find({
+          Payed: false,
+        })
+      : await Account.find({
+          Seller: seller,
+          Payed: false,
+        });
 
     const tariffs = await Tariff.find({ IsFree: false });
 
@@ -690,7 +709,6 @@ class MarzbanController {
     marzbanSubscriptionUrl: string,
     sellerSubscriptionUrl: string
   ) => {
-    console.log(sellerSubscriptionUrl);
     const url =
       sellerSubscriptionUrl.trim() !== ""
         ? sellerSubscriptionUrl +
