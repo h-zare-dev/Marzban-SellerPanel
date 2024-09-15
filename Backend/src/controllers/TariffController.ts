@@ -24,17 +24,20 @@ class TariffController {
 
   static AddTariff: RequestHandler = async (req, res, next) => {
     try {
-      const { Title, DataLimit, Duration, IsFree, IsVisible } = req.body as {
-        Title: string | undefined;
-        DataLimit: number | undefined;
-        Duration: number | undefined;
-        IsFree: boolean | undefined;
-        IsVisible: boolean | undefined;
-      };
+      const { Title, DataLimit, Duration, Price, IsFree, IsVisible } =
+        req.body as {
+          Title: string | undefined;
+          DataLimit: number | undefined;
+          Duration: number | undefined;
+          Price: number | undefined;
+          IsFree: boolean | undefined;
+          IsVisible: boolean | undefined;
+        };
       const tariff = new Tariff({
         Title: Title,
         DataLimit: DataLimit,
         Duration: Duration,
+        Price: Price,
         IsFree: IsFree,
         IsVisible: IsVisible,
       });
