@@ -273,22 +273,22 @@ class MarzbanController {
 
       let status: string | undefined = undefined;
 
-      if (onhold) {
-        expireDuration = ((tariff.Duration ?? 0) + 1) * (60 * 60 * 24);
+      if (onhold && tariff.Duration && tariff.Duration > 0) {
+        expireDuration = (tariff.Duration + 1) * (60 * 60 * 24);
 
         expireDate.setDate(expireDate.getDate() + 30);
         expireDate.setHours(20, 30, 0);
 
         onHoldTimeout = expireDate;
         status = "on_hold";
-      } else {
-        expireDate.setDate(expireDate.getDate() + (tariff.Duration ?? 0));
+      } else if (tariff.Duration && tariff.Duration > 0) {
+        expireDate.setDate(expireDate.getDate() + tariff.Duration + 1);
         expireDate.setHours(20, 30, 0);
 
         expireTimestamp = Math.floor(expireDate.getTime() / 1000);
       }
 
-      if (tariff.Duration && tariff.Duration > 0)
+      if (tariff.DataLimit && tariff.DataLimit > 0)
         data_limit = tariff.DataLimit * 1024 * 1024 * 1024;
 
       const generateUsername =
