@@ -273,26 +273,27 @@ class MarzbanController {
 
       let status: string | undefined = undefined;
 
-      if (onhold && tariff.Duration && tariff.Duration > 0) {
-        expireDuration = (tariff.Duration + 1) * (60 * 60 * 24);
+      if (tariff.Duration && tariff.Duration > 0)
+        if (onhold) {
+          expireDuration = (tariff.Duration + 1) * (60 * 60 * 24);
 
-        expireDate.setDate(expireDate.getDate() + 30);
-        expireDate.setHours(20, 30, 0);
+          expireDate.setDate(expireDate.getDate() + 30);
+          expireDate.setHours(20, 30, 0);
 
-        onHoldTimeout = expireDate;
-        status = "on_hold";
-      } else if (tariff.Duration && tariff.Duration > 0) {
-        expireDate.setDate(expireDate.getDate() + tariff.Duration + 1);
-        expireDate.setHours(20, 30, 0);
+          onHoldTimeout = expireDate;
+          status = "on_hold";
+        } else {
+          expireDate.setDate(expireDate.getDate() + tariff.Duration);
+          expireDate.setHours(20, 30, 0);
 
-        expireTimestamp = Math.floor(expireDate.getTime() / 1000);
-      }
+          expireTimestamp = Math.floor(expireDate.getTime() / 1000);
+        }
 
       if (tariff.DataLimit && tariff.DataLimit > 0)
         data_limit = tariff.DataLimit * 1024 * 1024 * 1024;
 
       const generateUsername =
-        username + seller?.Counter.toString().padStart(3, "0");
+        username + seller.Counter.toString().padStart(3, "0");
 
       let inbounds: { vmess?: string[]; vless?: string[]; trojan?: string[] } =
         {};
@@ -494,19 +495,28 @@ class MarzbanController {
         return;
       }
 
-      const currentDate = new Date();
+      let data_limit: number | undefined = undefined;
 
-      currentDate.setDate(currentDate.getDate() + (tariff.Duration ?? 0));
-      currentDate.setHours(20, 30, 0);
+      let expireTimestamp: number | undefined = undefined;
 
-      const expireTimestamp = Math.floor(currentDate.getTime() / 1000);
+      if (tariff.Duration && tariff.Duration > 0) {
+        const currentDate = new Date();
+
+        currentDate.setDate(currentDate.getDate() + tariff.Duration);
+        currentDate.setHours(20, 30, 0);
+
+        expireTimestamp = Math.floor(currentDate.getTime() / 1000);
+      }
+
+      if (tariff.DataLimit && tariff.DataLimit > 0)
+        data_limit = tariff.DataLimit;
 
       let apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/user/" + username;
       const result = await axios.put(
         apiURL,
         {
           expire: expireTimestamp,
-          data_limit: (tariff?.DataLimit ?? 0) * 1024 * 1024 * 1024,
+          data_limit: data_limit,
         },
         {
           headers: { Authorization: req.headers.authorization },
