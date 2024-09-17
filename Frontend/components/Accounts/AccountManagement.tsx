@@ -53,8 +53,9 @@ export default function AccountManagement() {
       ? +config.IGNORE_TRAFFIC_TO_REMOVE
       : 1.2;
     if (
-      account.payed !== "Paid" &&
-      (user.IsAdmin || account.used_traffic < +ignore * 1024 * 1024 * 1024)
+      user.IsAdmin ||
+      (account.payed !== "Paid" &&
+        account.used_traffic < +ignore * 1024 * 1024 * 1024)
     ) {
       setSelectedAccount(account);
       refDeleteModal.current?.Show(account.username);
