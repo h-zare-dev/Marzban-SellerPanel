@@ -1,11 +1,11 @@
 import { RequestHandler } from "express";
-import axios from "axios";
+import axios, { Axios, AxiosResponse } from "axios";
 import { Document, Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
 import Helper from "../utils/Helper";
 import Account from "../models/Account";
-import Seller from "../models/Seller";
+import Seller, { ISeller } from "../models/Seller";
 import Tariff from "../models/Tariff";
 import ConfigFile from "../utils/Config";
 import Mongoose from "../utils/Mongoose";
@@ -261,8 +261,6 @@ class MarzbanController {
         return;
       }
 
-      seller.Counter++;
-
       let data_limit: number | undefined = undefined;
 
       let expireTimestamp: number | undefined = undefined;
@@ -292,9 +290,11 @@ class MarzbanController {
       if (tariff.DataLimit && tariff.DataLimit > 0)
         data_limit = tariff.DataLimit * 1024 * 1024 * 1024;
 
-      const generateUsername =
-        username + seller.Counter.toString().padStart(3, "0");
-
+      const generateUsername = await this.GetUsernameAvailable(
+        seller,
+        username,
+        req.headers.authorization
+      );
       let inbounds: { vmess?: string[]; vless?: string[]; trojan?: string[] } =
         {};
       let proxies: {
@@ -713,6 +713,26 @@ class MarzbanController {
       TotalLimitUnpaid: totalLimitUnpaid,
       TotalPriceUnpaid: totalPriceUnpaid,
     };
+  };
+
+  static GetUsernameAvailable = async (
+    seller: ISeller,
+    username: string,
+    authorization: string | undefined
+  ) => {
+    const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/user/";
+    let result: AxiosResponse;
+    let generateUsername: string;
+
+    do {
+      seller.Counter++;
+      generateUsername = username + seller.Counter.toString().padStart(3, "0");
+
+      result = await axios.get(apiURL + generateUsername, {
+        headers: { Authorization: authorization },
+      });
+    } while (result.data.username);
+    return generateUsername;
   };
 
   static GetSubscriptionUrl = (
