@@ -722,17 +722,23 @@ class MarzbanController {
   ) => {
     const apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/user/";
     let result: AxiosResponse;
-    let generateUsername: string;
+    let generateUsername: string = "";
 
-    do {
-      seller.Counter++;
-      generateUsername = username + seller.Counter.toString().padStart(3, "0");
+    try {
+      do {
+        seller.Counter++;
+        generateUsername =
+          username + seller.Counter.toString().padStart(3, "0");
 
-      result = await axios.get(apiURL + generateUsername, {
-        headers: { Authorization: authorization },
-      });
-    } while (result.data.username);
-    return generateUsername;
+        result = await axios.get(apiURL + generateUsername, {
+          headers: { Authorization: authorization },
+        });
+      } while (true);
+    } catch (AxiosError) {}
+
+    if (generateUsername != "") return generateUsername;
+
+    throw new Error("Username is Empty");
   };
 
   static GetSubscriptionUrl = (
