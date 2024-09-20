@@ -509,7 +509,7 @@ class MarzbanController {
       }
 
       if (tariff.DataLimit && tariff.DataLimit > 0)
-        data_limit = tariff.DataLimit;
+        data_limit = tariff.DataLimit * 1024 * 1024 * 1024;
 
       let apiURL = (await ConfigFile.GetMarzbanURL()) + "/api/user/" + username;
       const result = await axios.put(
