@@ -11,6 +11,6 @@ const router = Router();
 // router.delete("/account/:id", AccountController.RemoveAccount);
 router.post("/payaccount/:id", AccountController.PayAccount);
 router.post("/payaccounts", AccountController.PayAccounts);
-router.post("/converttariff", AccountController.ConvertTariff);
+// router.post("/converttariff", AccountController.ConvertTariff);
 
 export default router;
