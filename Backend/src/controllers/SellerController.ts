@@ -3,13 +3,13 @@ import { Types } from "mongoose";
 
 import Seller from "../models/Seller";
 import ConfigFile from "../utils/Config";
-import MarzbanController from "./MarzbanController";
 import axios from "axios";
+import AccountHelpers from "../utils/AccountHelpers";
 
 class SellerController {
   static GetSellerList: RequestHandler = async (req, res, next) => {
     try {
-      if (await MarzbanController.CheckToken(req.headers.authorization)) {
+      if (await AccountHelpers.CheckToken(req.headers.authorization)) {
         const result = await Seller.find();
         res.status(200).json(result);
         return;
@@ -52,7 +52,7 @@ class SellerController {
         MarzbanPassword: string | undefined;
       };
 
-      if (!(await MarzbanController.CheckToken(req.headers.authorization)))
+      if (!(await AccountHelpers.CheckToken(req.headers.authorization)))
         throw new Error("Invalid Token");
 
       try {
@@ -96,7 +96,7 @@ class SellerController {
     try {
       const id: string = req.params.id;
 
-      if (!(await MarzbanController.CheckToken(req.headers.authorization)))
+      if (!(await AccountHelpers.CheckToken(req.headers.authorization)))
         throw new Error("Invalid Token");
 
       const { Title, Username, Password } = req.body as {
@@ -141,7 +141,7 @@ class SellerController {
     try {
       const id: string = req.params.id;
 
-      if (!(await MarzbanController.CheckToken(req.headers.authorization)))
+      if (!(await AccountHelpers.CheckToken(req.headers.authorization)))
         throw new Error("Invalid Token");
 
       const result = await Seller.deleteOne({ _id: new Types.ObjectId(id) });

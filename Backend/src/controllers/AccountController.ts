@@ -84,6 +84,7 @@ class AccountController {
       next(error);
     }
   };
+
   static PayAccount: RequestHandler = async (req, res, next) => {
     try {
       const id: string = req.params.id;

@@ -62,10 +62,6 @@ const Connecting = async () => {
   try {
     const isValidLicense = await Mongoose.CheckLicense();
 
-    // await Mongoose.AddWholeSaler();
-    // console.log("GenerateWholeSaler...");
-    // return;
-
     if (isValidLicense && (await Mongoose.ConnectDbWholeSaler())) {
       httpServer.listen(8080);
       httpsServer.listen(8443);
