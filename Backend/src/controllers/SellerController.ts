@@ -11,7 +11,22 @@ class SellerController {
     try {
       if (await AccountHelpers.CheckToken(req.headers.authorization)) {
         const result = await Seller.find();
-        res.status(200).json(result);
+
+        const customSellers = await Promise.all(
+          result.map(async (seller) => {
+            const totalUnpaid = await AccountHelpers.GetTotalUnpaid(
+              seller,
+              false
+            );
+
+            return {
+              ...seller.toObject(), // Convert mongoose doc to plain object
+              TotalPrice: totalUnpaid.TotalPriceUnpaid,
+            };
+          })
+        );
+
+        res.status(200).json(customSellers);
         return;
       }
       res.status(404).json("Invalid Token");

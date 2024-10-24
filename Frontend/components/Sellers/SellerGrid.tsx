@@ -51,6 +51,12 @@ export default function SellerGrid(props: PropsType) {
       headerClassName: "MUIGridHeader",
     },
     {
+      field: "TotalPrice",
+      headerName: "TotalPrice (IRT)",
+      width: 150,
+      headerClassName: "MUIGridHeader",
+    },
+    {
       headerName: "Status",
       field: "active",
       type: "actions",
